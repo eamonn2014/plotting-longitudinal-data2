@@ -40,16 +40,16 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                     direction = "bottom"
                 ),
                 h2("Plotting longitudinal data and estimating averages with the help of a natural log transformation"),
- 
-                 h4(p("A laboratory measurment is taken on patients over time. 
+                
+                h4(p("A laboratory measurment is taken on patients over time. 
                 Within visit windows the times at which the measurement is grouped for all patients.
                 We have simulated data that has a skewed distribution. We describe the average
                       trend using simple summary statistics, log transform the data and calculate summary statistics followed by 
                       exponentiating back and finally fitting a generalized least squares (GLS) model to the log transformed data
                       (using an autocorrelation structure of order 1 as we simulate AR(1)) to account for the fact patients are 
                       followed over time, finally back transforming the model estimates. It is important to always plot the data.")),
-              
-                 
+                
+                
                 shinyUI(pageWithSidebar(
                     headerPanel(" "),
                     
@@ -75,7 +75,7 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                           tags$style(HTML('#resample{background-color:orange}'))
                                       ),
                                       
-                                     
+                                      
                                       selectInput("plot", div(h5(tags$span(style="color:blue", "Select a plot/estimation approach:"))),
                                                   list("1 Means calculated on untransformed data" = "plot1",
                                                        "2 Medians calculated on untransformed data" = "plot1a",
@@ -87,12 +87,12 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                       
                                       
                                       #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                                  
                                       
-                                    
+                                      
+                                      
                                       
                                       ### maximum number of possible observations
-                                   
+                                      
                                       sliderInput("N",
                                                   div(h5(tags$span(style="color:blue", "total number of subjects"))),
                                                   min=20, max=500, step=5, value=100, ticks=FALSE),
@@ -100,7 +100,7 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                       sliderInput("J",
                                                   div(h5(tags$span(style="color:blue", "Maximum visit in data simulation including baseline"))),
                                                   min=3, max=10, step=1, value=6, ticks=FALSE),
-                                   
+                                      
                                       
                                       sliderInput("autocorrelation",    
                                                   div(h5(tags$span(style="color:blue", "Auto correlation"))),  ###
@@ -130,7 +130,7 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                                   div(h5(tags$span(style="color:blue",  "True error SD"  ))),
                                                   min = -4, max = 4,  value = c(0.7995 ), step=.1, ticks=FALSE),
                                       
-                                    
+                                      
                                       #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                       
                                       div(p( strong("References:"))),  
@@ -168,102 +168,105 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                            #h4(strong("Plot the data. Always plot the data.")),
                                            plotOutput("reg.plot"),
                                            h4(strong("Figure 1. Patient profiles and estimate of central tendancy the average response at visits with 95% confidence")),
-                                          
+                                           
                                            div(class="span7", verbatimTextOutput("reg.summary5")),
                                            h4(strong("Table 1 Summary statistics, untransformed data")),
                                            
                                            
                                            div(class="span7", verbatimTextOutput("reg.summary3"),
-                                           h4(strong("Table 2 Log transformation, calculate summary statistics then back transform (exponentiate)")),
+                                               h4(strong("Table 2 Log transformation, calculate summary statistics then back transform (exponentiate)")),
+                                               
+                                               
+                                               div(class="span7", verbatimTextOutput("reg.summary4")),
+                                               h4(strong("Table 3 GLS model fit to natural logged data, the GLS model estimates and 95% CI are then exponentiated")),
+                                               
+                                               div(class="span7", verbatimTextOutput("reg.summary6")),
+                                               h4(strong("Table 3 LMM model fit to natural logged data, the LMM model estimates and 95% CI are then exponentiated")),
+                                           ) ,
+                                           #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                                           tabPanel("A2. GLS", value=3, 
+                                                    
+                                                    # div(class="span7", verbatimTextOutput("reg.summary1")),
+                                                    # h4(paste("Table 2. GLS fit to simulated data, reflecting data generating mechanism, 
+                                                    #    treatment effect starting at baseline")), 
+                                                    
+                                           ) ,
+                                           #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                                           tabPanel("A3. GLS treatment effect", value=6, 
+                                                    # 
+                                                    # div(plotOutput("reg.plot2", width=fig.width, height=fig.height)), 
+                                                    # h4(paste("Figure 3. GLS fit to simulated data, treatment contrasts")), 
+                                                    # 
+                                                    # div(class="span7", verbatimTextOutput("reg.summary2c")),
+                                                    # h4(paste("Table 3. GLS fit to simulated data, treatment contrasts")), 
+                                                    
+                                           ) ,
+                                           #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                                           tabPanel("B1. Plots", 
+                                                    
+                                                    # div(plotOutput("reg.plot99", width=fig.width, height=fig.height)), 
+                                                    # h4(paste("Figure 4. Spaghetti plot of simulated data, every patient profile is plotted, treatment effect starting after baseline, with mean trend lines")), 
+                                                    # 
+                                                    # div(plotOutput("reg.plot33", width=fig.width, height=fig.height)),  
+                                                    # h4(paste("Figure 5. Boxplots of simulated data, reflecting treatment effect starting after baseline")), 
+                                                    
+                                           ) ,
+                                           
+                                           #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                                           tabPanel("B2. GLS & LMM", 
+                                                    
+                                                    # div(class="span7", verbatimTextOutput("reg.summaryb1")),
+                                                    # h4(paste("Table 4. GLS fit to simulated data, reflecting treatment effect starting after baseline")), 
+                                                    # div(class="span7", verbatimTextOutput("reg.summaryb2")),
+                                                    # h4(paste("Table 5. LMM fit to simulated data, reflecting treatment effect starting after baseline")), 
+                                                    
+                                           ) ,
+                                           #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                                           tabPanel("B3. GLS treatment effect", 
+                                                    
+                                                    # div(plotOutput("reg.plot2b", width=fig.width, height=fig.height)),  
+                                                    # h4(paste("Figure 6.  GLS fit to simulated data, treatment contrasts  treatment effect starting after baseline")), 
+                                                    # 
+                                                    # div(class="span7", verbatimTextOutput("reg.summaryb3copy")),
+                                                    # h4(paste("Table 6. GLS fit to simulated data,  reflecting treatment effect starting after baseline, treatment contrasts.")), 
+                                                    
+                                           ) ,
+                                           #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                                           tabPanel("B4. Diagnostics",
+                                                    # h4("Figure 7. Four residual plots to check for absence of trends in central tendency and in variability"),
+                                                    # div(plotOutput("res.diag", width=fig.width, height=fig.height)),       
+                                                    # p(strong("Upper left panel shows the baseline score on the x-axis. 
+                                                    #    Upper right panel shows shows time on the x-axis, note though the selected reference level is plotted first.
+                                                    #    Bottom left panel is the QQ plot for checking normality of residuals from the GLS fit.
+                                                    #    Bottom right panel is the histogram for checking normality of residuals from the GLS fit with ~N(mean=0, sd=GLS model sigma) curve superimposed.
+                                                    #    ")),
+                                           ),
+                                           
+                                           #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                                           tabPanel("C1. Data listing", value=3, 
+                                                    # 
+                                                    # h6("This is superior to a plain rtf output in that this can be sorted and filtered on the fly."),
+                                                    # DT::dataTableOutput("table1"),
+                                           ),
+                                           #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                                           tabPanel("D. Notes", value=3, 
+                                                    
+                                                    
+                                                    
+                                                    
+                                           ) 
                                            
                                            
-                                           div(class="span7", verbatimTextOutput("reg.summary4")),
-                                           h4(strong("Table 3 GLS model fit to natural logged data, the GLS model estimates and 95% CI are then exponentiated")),
-                                  ) ,
-                                  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                                  tabPanel("A2. GLS", value=3, 
                                            
-                                           # div(class="span7", verbatimTextOutput("reg.summary1")),
-                                           # h4(paste("Table 2. GLS fit to simulated data, reflecting data generating mechanism, 
-                                           #    treatment effect starting at baseline")), 
-                                           
-                                  ) ,
-                                  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                                  tabPanel("A3. GLS treatment effect", value=6, 
-                                           # 
-                                           # div(plotOutput("reg.plot2", width=fig.width, height=fig.height)), 
-                                           # h4(paste("Figure 3. GLS fit to simulated data, treatment contrasts")), 
-                                           # 
-                                           # div(class="span7", verbatimTextOutput("reg.summary2c")),
-                                           # h4(paste("Table 3. GLS fit to simulated data, treatment contrasts")), 
-                                           
-                                  ) ,
-                                  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                                  tabPanel("B1. Plots", 
-                                           
-                                           # div(plotOutput("reg.plot99", width=fig.width, height=fig.height)), 
-                                           # h4(paste("Figure 4. Spaghetti plot of simulated data, every patient profile is plotted, treatment effect starting after baseline, with mean trend lines")), 
-                                           # 
-                                           # div(plotOutput("reg.plot33", width=fig.width, height=fig.height)),  
-                                           # h4(paste("Figure 5. Boxplots of simulated data, reflecting treatment effect starting after baseline")), 
-                                           
-                                  ) ,
-                                  
-                                  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                                  tabPanel("B2. GLS & LMM", 
-                                           
-                                           # div(class="span7", verbatimTextOutput("reg.summaryb1")),
-                                           # h4(paste("Table 4. GLS fit to simulated data, reflecting treatment effect starting after baseline")), 
-                                           # div(class="span7", verbatimTextOutput("reg.summaryb2")),
-                                           # h4(paste("Table 5. LMM fit to simulated data, reflecting treatment effect starting after baseline")), 
-                                           
-                                  ) ,
-                                  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                                  tabPanel("B3. GLS treatment effect", 
-                                           
-                                           # div(plotOutput("reg.plot2b", width=fig.width, height=fig.height)),  
-                                           # h4(paste("Figure 6.  GLS fit to simulated data, treatment contrasts  treatment effect starting after baseline")), 
-                                           # 
-                                           # div(class="span7", verbatimTextOutput("reg.summaryb3copy")),
-                                           # h4(paste("Table 6. GLS fit to simulated data,  reflecting treatment effect starting after baseline, treatment contrasts.")), 
-                                           
-                                  ) ,
-                                  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                                  tabPanel("B4. Diagnostics",
-                                           # h4("Figure 7. Four residual plots to check for absence of trends in central tendency and in variability"),
-                                           # div(plotOutput("res.diag", width=fig.width, height=fig.height)),       
-                                           # p(strong("Upper left panel shows the baseline score on the x-axis. 
-                                           #    Upper right panel shows shows time on the x-axis, note though the selected reference level is plotted first.
-                                           #    Bottom left panel is the QQ plot for checking normality of residuals from the GLS fit.
-                                           #    Bottom right panel is the histogram for checking normality of residuals from the GLS fit with ~N(mean=0, sd=GLS model sigma) curve superimposed.
-                                           #    ")),
-                                  ),
-                                  
-                                  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                                  tabPanel("C1. Data listing", value=3, 
-                                           # 
-                                           # h6("This is superior to a plain rtf output in that this can be sorted and filtered on the fly."),
-                                           # DT::dataTableOutput("table1"),
-                                  ),
-                                  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                                  tabPanel("D. Notes", value=3, 
-                                           
-                                        
-                                           
-                                           
-                                  ) 
-                                  
-                                  
-                                  
+                                           #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                                  )
                                   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                               )
-                              #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                              #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~end tab panels 
+                              
                     )
-                    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~end tab panels 
-                    
                 )
-                )
-))
+                ))
 
 server <- shinyServer(function(input, output   ) {
     
@@ -280,9 +283,9 @@ server <- shinyServer(function(input, output   ) {
     # --------------------------------------------------------------------------
     # This is where a new sample is instigated 
     random.sample <- reactive({
-     
+        
         # I analysed some skewed data and these are the parameters
-    
+        
         
         # Dummy line to trigger off button-press
         foo <-      input$resample
@@ -297,7 +300,7 @@ server <- shinyServer(function(input, output   ) {
         tau01 <-  input$r
         m <-      input$J
         
-         
+        
         
         return(list( n=n,  beta0=beta0, beta1=beta1, sigma=sigma, 
                      tau0=tau0, tau1=tau1, tau01=tau01, ar.val=ar.val, m=m
@@ -365,7 +368,7 @@ server <- shinyServer(function(input, output   ) {
     }) 
     
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 
+    
     
     
     
@@ -464,14 +467,15 @@ server <- shinyServer(function(input, output   ) {
     })     
     
     
-    #---------------------------------------------------------------------------
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    
     fit.regression2 <- reactive({
         
         data <- make.data()
         
         df <- data$d
         
-        require(lmer)
+        require(lme4)
         require(dplyr)
         
         df$x <- df$VISIT
@@ -498,18 +502,16 @@ server <- shinyServer(function(input, output   ) {
         g <- as.vector(g)
         f$id<-rep(seq_along( rle(g)$values ), times = rle(g)$lengths )
         
-        
-        
-        ################################
+        ###############################
         
         fit.res <- tryCatch(lmer(y ~    x + 0+ (1 + as.numeric(x) | id), data = f), 
                             error=function(e) e)
-         
-        i <-  confint(fit.res )
-        ci <- i[grepl("VISIT*", rownames(i)), ]
-        fc <- fixef(f)
         
-        se <-  fixef(f)  # just filling this , not needed
+        i <-  confint(fit.res )
+        ci <- i[grep("^x", rownames(i)), ]
+        fc <- fixef(fit.res)
+        
+        se <-  fixef(fit.res)  # just filling this , not needed
         i <-  cbind(as.data.frame(fc), se, ci)
         
         estx <- as.data.frame(i)
@@ -519,9 +521,10 @@ server <- shinyServer(function(input, output   ) {
         rownames(est) <- NULL
         est <-  est[,c(5,1,2,3,4)]  
         names(est) <- c('Visit','Estimate','se', 'Lower', 'Upper')
-      
+        
         return(list(fit.res2a=est , fit.res2b=fit.res ))
     })     
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
     
     
@@ -728,98 +731,98 @@ server <- shinyServer(function(input, output   ) {
         } else if (input$plot == "plot1a") {    #MEDIANS
             
             
+            
+            df_summary <- df %>% # the names of the new data frame and the data frame to be summarised
+                group_by(VISIT, variable) %>%                # the grouping variable
+                summarise(mean_PL = mean(value, na.rm=TRUE),  # calculates the mean of each group
+                          sd_PL = sd(value, na.rm=TRUE),      # calculates the sd of each group
+                          n_PL = length(na.omit(value)),      # calculates the sample size per group
+                          SE_PL = sd(value, na.rm=TRUE)/sqrt(length(na.omit(value))) ,# SE of each group
+                          median = median(value, na.rm=TRUE) ,
+                          medianL =  sort(value)[qbinom(c(.025), size=length(value), prob=.5)]   ,
+                          medianU =  sort(value)[qbinom(c(.975), size=length(value), prob=.5)]   )
+            
+            df_summary1 <- merge(df, df_summary)  # merge stats to dataset
+            
+            
+            
+            
+            df_summary1$L2SE <- df_summary1$mean_PL - 2*df_summary1$SE_PL
+            df_summary1$H2SE <- df_summary1$mean_PL + 2*df_summary1$SE_PL
+            
+            df_summary1$L2SE <- df_summary1$medianL
+            df_summary1$H2SE <- df_summary1$medianU
+            
+            pr1 <- ggplot((df_summary1), aes(x = VISIT, y =value, color = ID)) +
+                geom_line( size=.5, alpha=0.2) +
+                #scale_color_gradient(low = "blue", high = "red")+
+                #scale_color_brewer(palette = "Dark2") +
+                stat_summary(geom="line",  fun=median, colour="black", lwd=0.5) +  # , linetype="dashed"
+                stat_summary(geom="point", fun=median, colour="black") +
+                geom_errorbar(data=(df_summary1), 
+                              aes( ymin=L2SE, ymax=H2SE ), color = "black",
+                              width=0.05, lwd = 0.05) +
+                scale_y_continuous(expand = c(.1,0) ) +
                 
-                df_summary <- df %>% # the names of the new data frame and the data frame to be summarised
-                    group_by(VISIT, variable) %>%                # the grouping variable
-                    summarise(mean_PL = mean(value, na.rm=TRUE),  # calculates the mean of each group
-                              sd_PL = sd(value, na.rm=TRUE),      # calculates the sd of each group
-                              n_PL = length(na.omit(value)),      # calculates the sample size per group
-                              SE_PL = sd(value, na.rm=TRUE)/sqrt(length(na.omit(value))) ,# SE of each group
-                              median = median(value, na.rm=TRUE) ,
-                              medianL =  sort(value)[qbinom(c(.025), size=length(value), prob=.5)]   ,
-                medianU =  sort(value)[qbinom(c(.975), size=length(value), prob=.5)]   )
                 
-                df_summary1 <- merge(df, df_summary)  # merge stats to dataset
+                
+                scale_x_continuous(breaks = c(unique(df$VISIT)),
+                                   labels = 
+                                       c(unique(df$VISIT))
+                ) +
                 
                 
                 
                 
-                df_summary1$L2SE <- df_summary1$mean_PL - 2*df_summary1$SE_PL
-                df_summary1$H2SE <- df_summary1$mean_PL + 2*df_summary1$SE_PL
+                geom_segment(aes(x = 1, xend = 3, y = (1), yend=(1)), color = "blue" , size=0.05, linetype="dashed", alpha=0.02) +
+                geom_segment(aes(x = 1, xend = 3, y = (2.5), yend=(2.5)), color = "blue" , size=0.05, linetype="dashed", alpha=0.02) +
                 
-                df_summary1$L2SE <- df_summary1$medianL
-                df_summary1$H2SE <- df_summary1$medianU
+                theme(
+                    # get rid of panel grids
+                    panel.grid.major = element_blank(),
+                    panel.grid.minor = element_blank(),
+                    # Change plot and panel background
+                    plot.background=element_rect(fill = "white"),
+                    panel.background = element_rect(fill = 'black'),
+                    # Change legend
+                    legend.position = c(0.6, 0.07),
+                    legend.direction = "horizontal",
+                    legend.background = element_rect(fill = "black", color = NA),
+                    legend.key = element_rect(color = "gray", fill = "black"),
+                    legend.title = element_text(color = "white"),
+                    legend.text = element_text(color = "white")
+                ) +
                 
-                pr1 <- ggplot((df_summary1), aes(x = VISIT, y =value, color = ID)) +
-                    geom_line( size=.5, alpha=0.2) +
-                    #scale_color_gradient(low = "blue", high = "red")+
-                    #scale_color_brewer(palette = "Dark2") +
-                    stat_summary(geom="line",  fun=median, colour="black", lwd=0.5) +  # , linetype="dashed"
-                    stat_summary(geom="point", fun=median, colour="black") +
-                    geom_errorbar(data=(df_summary1), 
-                                  aes( ymin=L2SE, ymax=H2SE ), color = "black",
-                                  width=0.05, lwd = 0.05) +
-                    scale_y_continuous(expand = c(.1,0) ) +
-                    
-                    
-                    
-                    scale_x_continuous(breaks = c(unique(df$VISIT)),
-                                       labels = 
-                                           c(unique(df$VISIT))
-                    ) +
-                    
-                    
-                    
-                    
-                    geom_segment(aes(x = 1, xend = 3, y = (1), yend=(1)), color = "blue" , size=0.05, linetype="dashed", alpha=0.02) +
-                    geom_segment(aes(x = 1, xend = 3, y = (2.5), yend=(2.5)), color = "blue" , size=0.05, linetype="dashed", alpha=0.02) +
-                    
-                    theme(
-                        # get rid of panel grids
-                        panel.grid.major = element_blank(),
-                        panel.grid.minor = element_blank(),
-                        # Change plot and panel background
-                        plot.background=element_rect(fill = "white"),
-                        panel.background = element_rect(fill = 'black'),
-                        # Change legend
-                        legend.position = c(0.6, 0.07),
-                        legend.direction = "horizontal",
-                        legend.background = element_rect(fill = "black", color = NA),
-                        legend.key = element_rect(color = "gray", fill = "black"),
-                        legend.title = element_text(color = "white"),
-                        legend.text = element_text(color = "white")
-                    ) +
-                    
                 
                 
                 
                 EnvStats::stat_n_text(size = 4, y.pos = max(df_summary1$value, na.rm=T)*1.1 , y.expand.factor=0, 
                                       angle = 0, hjust = .5, family = "mono", fontface = "plain") + #295 bold
-                    
-                    theme(panel.background=element_blank(),
-                          # axis.text.y=element_blank(),
-                          # axis.ticks.y=element_blank(),
-                          # https://stackoverflow.com/questions/46482846/ggplot2-x-axis-extreme-right-tick-label-clipped-after-insetting-legend
-                          # stop axis being clipped
-                          plot.title=element_text(), plot.margin = unit(c(5.5,12,5.5,5.5), "pt"),
-                          legend.text=element_text(size=12),
-                          legend.title=element_text(size=14),
-                          legend.position="none",
-                          axis.text.x  = element_text(size=10),
-                          axis.text.y  = element_text(size=10),
-                          axis.line.x = element_line(color="black"),
-                          axis.line.y = element_line(color="black"),
-                          plot.caption=element_text(hjust = 0, size = 7))
                 
-                
-                
-                
-                
-                print(pr1 + labs(y="Response", x = "Visit") + 
-                          ggtitle(paste0("Individual responses ",
-                                         length(unique(df$ID))," patients & arithmetic mean with 95% CI shown in black\nNumber of patient values at each time point") )
-                )
-                
+                theme(panel.background=element_blank(),
+                      # axis.text.y=element_blank(),
+                      # axis.ticks.y=element_blank(),
+                      # https://stackoverflow.com/questions/46482846/ggplot2-x-axis-extreme-right-tick-label-clipped-after-insetting-legend
+                      # stop axis being clipped
+                      plot.title=element_text(), plot.margin = unit(c(5.5,12,5.5,5.5), "pt"),
+                      legend.text=element_text(size=12),
+                      legend.title=element_text(size=14),
+                      legend.position="none",
+                      axis.text.x  = element_text(size=10),
+                      axis.text.y  = element_text(size=10),
+                      axis.line.x = element_line(color="black"),
+                      axis.line.y = element_line(color="black"),
+                      plot.caption=element_text(hjust = 0, size = 7))
+            
+            
+            
+            
+            
+            print(pr1 + labs(y="Response", x = "Visit") + 
+                      ggtitle(paste0("Individual responses ",
+                                     length(unique(df$ID))," patients & arithmetic mean with 95% CI shown in black\nNumber of patient values at each time point") )
+            )
+            
             
             
             
@@ -962,7 +965,7 @@ server <- shinyServer(function(input, output   ) {
             
             
         }
-          
+        
         else if (input$plot == "plot4") {  # COMPARISON PLOT
             
             #_______________________________________________________________________________________
@@ -984,7 +987,7 @@ server <- shinyServer(function(input, output   ) {
             notran$Variable <- NULL
             #_______________________________________________________________________________________
             # medians
-
+            
             df_summary <- df %>% # the names of the new data frame and the data frame to be summarised
                 group_by(VISIT, variable) %>%                # the grouping variable
                 summarise(Estimate = median(value, na.rm=TRUE),  # calculates the mean of each group
@@ -1001,7 +1004,7 @@ server <- shinyServer(function(input, output   ) {
             names(meds) <- namz
             
             meds$Variable <- NULL
-             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             # LOG , calc mean then exp
             df$lvalue <- log(df$value)  #log the GH values!!!!!!!!!!!!!!!
             
@@ -1152,6 +1155,15 @@ server <- shinyServer(function(input, output   ) {
         
     })
     
+    output$reg.summary6 <- renderPrint({
+        
+        summary <- fit.regression2()$fit.res2a
+        
+        print(kable(summary, format="pandoc", row.names = FALSE, digits = c(3)))
+        
+        # return(list(summary))
+        
+    })     
     
     
 })
