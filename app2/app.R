@@ -46,7 +46,7 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                         We describe the average
                       trend using simple summary statistics, log transform the data and calculate summary statistics followed by 
                       exponentiating back, we also fit a generalized least squares (GLS) model to the log transformed data
-                      (using an autocorrelation structure of order 1 as we simulate AR(1) to account for the fact patients are 
+                      (using an autocorrelation structure of order 1 as we simulate AR(1)) to account for the fact patients are 
                       followed over time, finally back transforming the model estimates. We also fit a linear mixed model to the data.
                      It cannot be emphasized enough, always plot the data.")),
                 
@@ -145,11 +145,11 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                       
                                       sliderInput("q",   
                                                   div(h5(tags$span(style="color:blue", "True intercept SD"))),
-                                                  min = -4, max = 4, step=.0001, value = c(1.2748), ticks=FALSE) ,
+                                                  min = .0001, max = 4, step=.0001, value = c(1.2748), ticks=FALSE) ,
                                       
                                       sliderInput("s",      
                                                   div(h5(tags$span(style="color:blue", "True slope SD"))),
-                                                  min = -4, max = 4, step=.0001, value = c(0.2276), ticks=FALSE) ,
+                                                  min = .0001, max = 4, step=.0001, value = c(0.2276), ticks=FALSE) ,
                                       
                                       sliderInput("r", 
                                                   div(h5(tags$span(style="color:blue", "True intercept slope correlation"))),
@@ -157,7 +157,7 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                       
                                       sliderInput("sigma",  
                                                   div(h5(tags$span(style="color:blue",  "True error SD"  ))),
-                                                  min = -4, max = 4,  value = c(0.7995 ), step=.1, ticks=FALSE),
+                                                  min = .0001, max = 4,  value = c(0.7995 ), step=.1, ticks=FALSE),
                                       
                                       
                                       #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
