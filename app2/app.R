@@ -51,16 +51,15 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                      It cannot be emphasized enough, always plot the data.")),
                 
                 h4(p("The natural log transformation is used throughout. The first plot selection '1 Means calculated on untransformed data',
-                is a plot of the raw data with means at each timepoint
-                 with arithmetic means and 95%CIs. We can see heavily skewed data and that this plot is not very illuminating. 
+                is a plot of the raw data presenting at each timepoint arithmetic means and 95%CIs. We can see heavily skewed data and that this plot is not very illuminating. 
                  The next plot '1a Means calculated on untransformed data, antilog presentation' presents the same arithmetic mean and 95%CIs 
-                 as the previous plot. Here the data are 
-                 log transformed, note the means and CIs are calculated on the untransformed data, 
+                 as the previous plot. But here the data are 
+                 log transformed. Note the means and CIs are calculated on the untransformed data, 
                  then logged for presentation with antilog y tick values. This is not recommended 
-                 but serves to show the untransformed arithmetic means more clearer presented than the first plot. 
+                 but serves to show the untransformed arithmetic means more clearly presented than the first plot. 
                  Skip over '2 Medians calculated on untransformed data' which is not very illuminating.
                  The next selection '2a Medians calculated on untransformed data, antilog presentation' is generated using the same 
-                 approach as the figure 1a. That is, calculate medians and CIs; Log transform the data; Log transform medians and CIs. 
+                 approach as that of figure 1a. That is, calculate medians and CIs; Log transform the data; Log transform medians and CIs. 
                  Plot the data replacing y-axis tick marks with antilog values. This approach is acceptable for presenting the median.
                     Next we have the best approach for calculation and presentation of the arthmetic means. The selection  
                     '3 Log transformation, calculate statistics then back transform (exponentiate)' is self explanatory.
