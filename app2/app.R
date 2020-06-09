@@ -523,7 +523,7 @@ server <- shinyServer(function(input, output   ) {
         est <-  est[,c(5,1,2,3,4)]  
         names(est) <- c('Visit','Estimate','se', 'Lower', 'Upper')
         
-        est$se <- NULL
+        #est$se <- NULL
         return(list(fit.res2a=est , fit.res2b=fit.res ))
     })     
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1087,8 +1087,12 @@ server <- shinyServer(function(input, output   ) {
             meds$type <- "Untransformed medians"
             tran$type <- "Log transformed means"
             est$type <- "GLS model estimates"
+            lmm.est$type <- "LMM model estimates"
+            dd <- rbind( notran,meds, tran, est, lmm.est)
             
-            dd <- rbind( notran,meds, tran, est)
+            
+            
+            
             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             # plot
             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1207,6 +1211,8 @@ server <- shinyServer(function(input, output   ) {
     output$reg.summary6 <- renderPrint({
         
         summary <- fit.regression2()$fit.res2a
+        
+        summary$se <- NULL
         
         print(kable(summary, format="pandoc", row.names = FALSE, digits = c(3)))
         
