@@ -73,11 +73,12 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                       
                                      
                                       selectInput("plot", "Select a plot:",
-                                                  list("Untransformed data" = "plot1",
-                                                       "log transformation, calculate statistics then back transform (exponentiate)" = "plot2", 
-                                                       "GLS model on  natural log data, exponentiated estimates with 95% CI" = "plot3" ,
-                                                       "Estimate comparison plot" = "plot4",
-                                                       "GLS model diagnostics" = "plot5"
+                                                  list("1 Means calculated on untransformed data" = "plot1",
+                                                       "2 Medians calculated on untransformed data" = "plot1a",
+                                                       "3 Log transformation, calculate statistics then back transform (exponentiate)" = "plot2", 
+                                                       "4 GLS model on  natural log data, exponentiated estimates with 95% CI" = "plot3" ,
+                                                       "5 Estimate comparison plot" = "plot4",
+                                                       "6 GLS model diagnostics" = "plot5"
                                                   )),
                                       
                                       
@@ -576,6 +577,8 @@ server <- shinyServer(function(input, output   ) {
             
             pr1 <- ggplot((df_summary1), aes(x = VISIT, y =value, color = ID)) +
                 geom_line( size=.5, alpha=0.2) +
+                #scale_color_gradient(low = "blue", high = "red")+
+                #scale_color_brewer(palette = "Dark2") +
                 stat_summary(geom="line",  fun=mean, colour="black", lwd=0.5) +  # , linetype="dashed"
                 stat_summary(geom="point", fun=mean, colour="black") +
                 geom_errorbar(data=(df_summary1), 
@@ -591,8 +594,26 @@ server <- shinyServer(function(input, output   ) {
                 ) +
                 
                 
+                
+                
                 geom_segment(aes(x = 1, xend = 3, y = (1), yend=(1)), color = "blue" , size=0.05, linetype="dashed", alpha=0.02) +
                 geom_segment(aes(x = 1, xend = 3, y = (2.5), yend=(2.5)), color = "blue" , size=0.05, linetype="dashed", alpha=0.02) +
+                
+                theme(
+                    # get rid of panel grids
+                    panel.grid.major = element_blank(),
+                    panel.grid.minor = element_blank(),
+                    # Change plot and panel background
+                    plot.background=element_rect(fill = "white"),
+                    panel.background = element_rect(fill = 'black'),
+                    # Change legend
+                    legend.position = c(0.6, 0.07),
+                    legend.direction = "horizontal",
+                    legend.background = element_rect(fill = "black", color = NA),
+                    legend.key = element_rect(color = "gray", fill = "black"),
+                    legend.title = element_text(color = "white"),
+                    legend.text = element_text(color = "white")
+                ) +
                 
                 # theme(axis.text.y   = element_text(size=10),
                 #       axis.text.x   = element_text(size=10),
@@ -629,15 +650,114 @@ server <- shinyServer(function(input, output   ) {
                       plot.caption=element_text(hjust = 0, size = 7))
             
             
+            
+            
+            
             print(pr1 + labs(y="Response", x = "Visit") + 
                       ggtitle(paste0("Individual responses ",
                                      length(unique(df$ID))," patients & arithmetic mean with 95% CI shown in black\nNumber of patient values at each time point") )
             )
             
-        }
-        
-        
-        else if (input$plot == "plot2") {
+        } else if (input$plot == "plot1a") {
+            
+            
+                
+                df_summary <- df %>% # the names of the new data frame and the data frame to be summarised
+                    group_by(VISIT, variable) %>%                # the grouping variable
+                    summarise(mean_PL = mean(value, na.rm=TRUE),  # calculates the mean of each group
+                              sd_PL = sd(value, na.rm=TRUE),      # calculates the sd of each group
+                              n_PL = length(na.omit(value)),      # calculates the sample size per group
+                              SE_PL = sd(value, na.rm=TRUE)/sqrt(length(na.omit(value))) ,# SE of each group
+                              median = median(value, na.rm=TRUE) ,
+                              medianL =  sort(value)[qbinom(c(.025), size=length(value), prob=.5)]   ,
+                medianU =  sort(value)[qbinom(c(.975), size=length(value), prob=.5)]   )
+                
+                df_summary1 <- merge(df, df_summary)  # merge stats to dataset
+                
+                
+                
+                
+                df_summary1$L2SE <- df_summary1$mean_PL - 2*df_summary1$SE_PL
+                df_summary1$H2SE <- df_summary1$mean_PL + 2*df_summary1$SE_PL
+                
+                df_summary1$L2SE <- df_summary1$medianL
+                df_summary1$H2SE <- df_summary1$medianU
+                
+                pr1 <- ggplot((df_summary1), aes(x = VISIT, y =value, color = ID)) +
+                    geom_line( size=.5, alpha=0.2) +
+                    #scale_color_gradient(low = "blue", high = "red")+
+                    #scale_color_brewer(palette = "Dark2") +
+                    stat_summary(geom="line",  fun=median, colour="black", lwd=0.5) +  # , linetype="dashed"
+                    stat_summary(geom="point", fun=median, colour="black") +
+                    geom_errorbar(data=(df_summary1), 
+                                  aes( ymin=L2SE, ymax=H2SE ), color = "black",
+                                  width=0.05, lwd = 0.05) +
+                    scale_y_continuous(expand = c(.1,0) ) +
+                    
+                    
+                    
+                    scale_x_continuous(breaks = c(unique(df$VISIT)),
+                                       labels = 
+                                           c(unique(df$VISIT))
+                    ) +
+                    
+                    
+                    
+                    
+                    geom_segment(aes(x = 1, xend = 3, y = (1), yend=(1)), color = "blue" , size=0.05, linetype="dashed", alpha=0.02) +
+                    geom_segment(aes(x = 1, xend = 3, y = (2.5), yend=(2.5)), color = "blue" , size=0.05, linetype="dashed", alpha=0.02) +
+                    
+                    theme(
+                        # get rid of panel grids
+                        panel.grid.major = element_blank(),
+                        panel.grid.minor = element_blank(),
+                        # Change plot and panel background
+                        plot.background=element_rect(fill = "white"),
+                        panel.background = element_rect(fill = 'black'),
+                        # Change legend
+                        legend.position = c(0.6, 0.07),
+                        legend.direction = "horizontal",
+                        legend.background = element_rect(fill = "black", color = NA),
+                        legend.key = element_rect(color = "gray", fill = "black"),
+                        legend.title = element_text(color = "white"),
+                        legend.text = element_text(color = "white")
+                    ) +
+                    
+                
+                
+                
+                EnvStats::stat_n_text(size = 4, y.pos = max(df_summary1$value, na.rm=T)*1.1 , y.expand.factor=0, 
+                                      angle = 0, hjust = .5, family = "mono", fontface = "plain") + #295 bold
+                    
+                    theme(panel.background=element_blank(),
+                          # axis.text.y=element_blank(),
+                          # axis.ticks.y=element_blank(),
+                          # https://stackoverflow.com/questions/46482846/ggplot2-x-axis-extreme-right-tick-label-clipped-after-insetting-legend
+                          # stop axis being clipped
+                          plot.title=element_text(), plot.margin = unit(c(5.5,12,5.5,5.5), "pt"),
+                          legend.text=element_text(size=12),
+                          legend.title=element_text(size=14),
+                          legend.position="none",
+                          axis.text.x  = element_text(size=10),
+                          axis.text.y  = element_text(size=10),
+                          axis.line.x = element_line(color="black"),
+                          axis.line.y = element_line(color="black"),
+                          plot.caption=element_text(hjust = 0, size = 7))
+                
+                
+                
+                
+                
+                print(pr1 + labs(y="Response", x = "Visit") + 
+                          ggtitle(paste0("Individual responses ",
+                                         length(unique(df$ID))," patients & arithmetic mean with 95% CI shown in black\nNumber of patient values at each time point") )
+                )
+                
+            
+            
+            
+            
+        }   else if (input$plot == "plot2") {
             
             
             df$lvalue <- log(df$value)  #log the GH values!!!!!!!!!!!!!!!
@@ -795,6 +915,32 @@ server <- shinyServer(function(input, output   ) {
             names(notran) <- namz
             
             notran$Variable <- NULL
+            #_______________________________________________________________________________________
+            # medians
+            
+            
+            df_summary <- df %>% # the names of the new data frame and the data frame to be summarised
+                group_by(VISIT, variable) %>%                # the grouping variable
+                summarise(Estimate = median(value, na.rm=TRUE),  # calculates the mean of each group
+                          #sd_PL = sd(value, na.rm=TRUE),      # calculates the sd of each group
+                          #n_PL = length(na.omit(value)),      # calculates the sample size per group
+                          SE_PL = sd(value, na.rm=TRUE)/sqrt(length(na.omit(value))) ,# SE of each group
+                          #median = median(value, na.rm=TRUE) ,
+                          medianL =  sort(value)[qbinom(c(.025), size=length(value), prob=.5)]   ,
+                          medianU =  sort(value)[qbinom(c(.975), size=length(value), prob=.5)]   )
+            
+            meds <- df_summary
+            namz <- c("Visit", "Variable","Estimate", "se", "Lower", "Upper")
+            
+            names(meds) <- namz
+            
+            meds$Variable <- NULL
+            
+            
+            
+            
+            
+            
             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             
             
@@ -819,12 +965,14 @@ server <- shinyServer(function(input, output   ) {
             tran<- as.data.frame(tran)
             notran<- as.data.frame(notran)
             est<- as.data.frame(est)
+            meds <- as.data.frame(meds)
             
-            notran$type <- "Untransformed"
-            tran$type <- "Log transformed"
+            notran$type <- "Untransformed means"
+            meds$type <- "Untransformed medians"
+            tran$type <- "Log transformed means"
             est$type <- "GLS model estimates"
             
-            dd <- rbind( notran, tran, est)
+            dd <- rbind( notran,meds, tran, est)
             
             
             # The errorbars overlapped, so use position_dodge to move them horizontally
@@ -853,7 +1001,7 @@ server <- shinyServer(function(input, output   ) {
                       plot.caption=element_text(hjust = 0, size = 7))
             
             print(pd1 + labs(y="Response", x = "Visit") + 
-                      ggtitle(paste0("Mean estimates from the different approaches") )
+                      ggtitle(paste0("Estimates of central tendancy from the different approaches") )
             )
             
             
