@@ -49,6 +49,8 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                       (using an autocorrelation structure of order 1 as we simulate AR(1) to account for the fact patients are 
                       followed over time, finally back transforming the model estimates. It is important to always plot the data.")),
                 
+                h4(p("The first plot.")),
+                
                 
                 shinyUI(pageWithSidebar(
                     headerPanel(" "),
@@ -80,6 +82,7 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                                   list("1 Means calculated on untransformed data" = "plot1",
                                                        "1a Means calculated on untransformed data, antilog presentation" = "plot1x",
                                                        "2 Medians calculated on untransformed data" = "plot1a",
+                                                       "2a Medians calculated on untransformed data, antilog presentation" = "plot1ax",
                                                        "3 Log transformation, calculate statistics then back transform (exponentiate)" = "plot2", 
                                                        "4 GLS model on natural log data, exponentiated estimates with 95% CI" = "plot3" ,
                                                        "5 LMM model on natural log data, exponentiated estimates with 95% CI" = "plot3a",
@@ -87,10 +90,10 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                                        "7 GLS model diagnostics" = "plot5"
                                                   )),
                                       
-                                      selectInput("logplot", div(h5(tags$span(style="color:blue", "Log Transform plot?"))),
-                                                  list("transform" = "yes",
-                                                       "no transformation" = "no" 
-                                                  )),
+                                      # selectInput("logplot", div(h5(tags$span(style="color:blue", "Log Transform plot?"))),
+                                      #             list("transform" = "yes",
+                                      #                  "no transformation" = "no" 
+                                      #             )),
                                       #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                       
                                       
@@ -887,8 +890,8 @@ server <- shinyServer(function(input, output   ) {
                 
                 
                 
-                geom_segment(aes(x = 1, xend = 3, y = (1), yend=(1)), color = "blue" , size=0.05, linetype="dashed", alpha=0.02) +
-                geom_segment(aes(x = 1, xend = 3, y = (2.5), yend=(2.5)), color = "blue" , size=0.05, linetype="dashed", alpha=0.02) +
+              #  geom_segment(aes(x = 1, xend = 3, y = (1), yend=(1)), color = "blue" , size=0.05, linetype="dashed", alpha=0.02) +
+               # geom_segment(aes(x = 1, xend = 3, y = (2.5), yend=(2.5)), color = "blue" , size=0.05, linetype="dashed", alpha=0.02) +
                 
                 theme(
                     # get rid of panel grids
@@ -937,9 +940,95 @@ server <- shinyServer(function(input, output   ) {
             )
             
             
+        
+            #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             
-            #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-            #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        } else if (input$plot == "plot1ax") {    #MEDIANS 2
+            
+            
+            
+            df_summary <- df %>% # the names of the new data frame and the data frame to be summarised
+                group_by(VISIT, variable) %>%                # the grouping variable
+                summarise(mean_PL = mean(value, na.rm=TRUE),  # calculates the mean of each group
+                          sd_PL = sd(value, na.rm=TRUE),      # calculates the sd of each group
+                          n_PL = length(na.omit(value)),      # calculates the sample size per group
+                          SE_PL = sd(value, na.rm=TRUE)/sqrt(length(na.omit(value))) ,# SE of each group
+                          mean_PL = median(value, na.rm=TRUE) ,
+                          medianL =  sort(value)[qbinom(c(.025), size=length(value), prob=.5)]   ,
+                          medianU =  sort(value)[qbinom(c(.975), size=length(value), prob=.5)]   )
+            
+            df_summary1 <- merge(df, df_summary)  # merge stats to dataset
+            
+            
+            
+            
+          #  df_summary1$L2SE <- df_summary1$mean_PL - 2*df_summary1$SE_PL
+          #  df_summary1$H2SE <- df_summary1$mean_PL + 2*df_summary1$SE_PL
+            
+            df_summary1$L2SE <- df_summary1$medianL
+            df_summary1$H2SE <- df_summary1$medianU
+            
+            #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            # step 2 log the raw data
+            df_summary1$lvalue <- log(df_summary1$value)  #loG THE DATA
+            
+            #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            # step 3 log my summary stats
+            df_summary1$mean_PL<- log(df_summary1$mean_PL)
+            df_summary1$L2SE<- log(df_summary1$L2SE)
+            df_summary1$H2SE <- log(df_summary1$H2SE)
+            #df2 <- unique(df_summary1[,c("VISIT","mean_PL","L2SE", "H2SE")])
+            #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            # plot the raw data
+            
+            pr1 <- ggplot((df_summary1), aes(x = VISIT, y =lvalue, color = ID)) +
+                geom_line( size=.5, alpha=0.2) +
+                geom_point( data=df_summary1, aes(x=VISIT , y=mean_PL), colour="red")           +
+                geom_line( data=df_summary1, aes(x=VISIT , y=mean_PL), colour="red") +
+                geom_errorbar(data=df_summary1, 
+                              aes( x=VISIT , y=mean_PL,ymin=L2SE, ymax=H2SE ), color = "black",
+                              width=0.05, lwd = 0.05) +
+                #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                # create ticks, replace log values with antlogs  
+                
+                scale_y_continuous(
+                    breaks= 
+                        log(c(0.01, .1,  1 , 10 ,100) )  ,  # this is where the values go
+                    labels= c(0.01,      0.1 ,     1,       10 ,      100)) +      
+                
+                scale_x_continuous(breaks = c(unique(df_summary1$VISIT)),
+                                   labels = 
+                                       c(unique(df_summary1$VISIT))
+                ) +
+                
+                #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                # create visit counts log the y position 
+                
+                EnvStats::stat_n_text(size = 4, y.pos = log(max(df_summary1$value, na.rm=T)*1.1) , y.expand.factor=0, 
+                                      angle = 0, hjust = .5, family = "mono", fontface = "plain") + #295 bold
+                
+                theme(panel.background=element_blank(),
+                      # axis.text.y=element_blank(),
+                      # axis.ticks.y=element_blank(),
+                      # https://stackoverflow.com/questions/46482846/ggplot2-x-axis-extreme-right-tick-label-clipped-after-insetting-legend
+                      # stop axis being clipped
+                      plot.title=element_text(), plot.margin = unit(c(5.5,12,5.5,5.5), "pt"),
+                      legend.text=element_text(size=12),
+                      legend.title=element_text(size=14),
+                      legend.position="none",
+                      axis.text.x  = element_text(size=10),
+                      axis.text.y  = element_text(size=10),
+                      axis.line.x = element_line(color="black"),
+                      axis.line.y = element_line(color="black"),
+                      plot.caption=element_text(hjust = 0, size = 7))
+            
+            
+            
+            print(pr1 + labs(y="Response", x = "Visit") + 
+                      ggtitle(paste0("Individual responses ",
+                                     length(unique(df$ID))," patients & arithmetic mean with 95% CI shown in black\nNumber of patient values at each time point") )
+            )
             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             
