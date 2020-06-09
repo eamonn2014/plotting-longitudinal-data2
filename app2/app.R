@@ -95,10 +95,7 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                       sliderInput("J",
                                                   div(h5(tags$span(style="color:blue", "Maximum visit in data simulation including baseline"))),
                                                   min=3, max=10, step=1, value=6, ticks=FALSE),
-                                      
-                                      sliderInput("trt.effect",
-                                                  div(h5(tags$span(style="color:blue", "Treatment effect"))),
-                                                  min = -20, max = 20, value = c(0), step=1, ticks=FALSE),
+                                   
                                       
                                       sliderInput("autocorrelation",    
                                                   div(h5(tags$span(style="color:blue", "Auto correlation"))),  ###
@@ -128,9 +125,7 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                                   div(h5(tags$span(style="color:blue",  "True error SD"  ))),
                                                   min = -4, max = 4,  value = c(0.7995 ), step=.1, ticks=FALSE),
                                       
-                                      sliderInput("time.ref",
-                                                  div(h5(tags$span(style="color:blue", "Estimate treatment effect at this visit"))),
-                                                  min=1, max=10, step=1, value=4, ticks=FALSE),
+                                    
                                       #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                       
                                       div(p( strong("References:"))),  
@@ -295,18 +290,6 @@ server <- shinyServer(function(input, output   ) {
         tau01 <-  input$r
         m <-      input$J
         
-        # sliderInput("q",   
-        #             div(h5(tags$span(style="color:blue", "True intercept SD"))),
-        #             min = -4, max = 4, step=.0001, value = c(1.2748), ticks=FALSE) ,
-        # 
-        # sliderInput("s",      
-        #             div(h5(tags$span(style="color:blue", "True slope SD"))),
-        #             min = -4, max = 4, step=.0001, value = c(0.2276), ticks=FALSE) ,
-        # 
-        # sliderInput("r", 
-        #             div(h5(tags$span(style="color:blue", "True intercept slope correlation"))),
-        #             min = -1, max = 1, value = c(-0.62), step=0.05, ticks=FALSE),
-        
          
         
         return(list( n=n,  beta0=beta0, beta1=beta1, sigma=sigma, 
@@ -461,7 +444,7 @@ server <- shinyServer(function(input, output   ) {
         estx <- as.data.frame(i)
         
         est <- exp(estx)            # exponentiate back
-        est$x<-as.numeric(1:6)
+        est$x<-as.numeric(1:input$J)
         rownames(est) <- NULL
         est <-  est[,c(5,1,2,3,4)]  
         names(est) <- c('Visit','Estimate','se', 'Lower', 'Upper')
