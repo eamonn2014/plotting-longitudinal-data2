@@ -39,14 +39,17 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                     gradient = "linear",
                     direction = "bottom"
                 ),
-                h3("xxxxxxxxxxxxxx"),
-                
-                h4(p("xxxxxxxxxxxxxxx.
-            
-            
-                  ")),
-                h4(p("xxxxxxxxxxxxxxxxxxx.")),
-                
+                h2("Plotting longitudinal data and estimating averages with the help of a natural log transformation"),
+ 
+                 h4(p("A laboratory measurment is taken on patients over time. 
+                Within visit windows the times at which the measurement is grouped for all patients.
+                We have simulated data that has a skewed distribution. We describe the average
+                      trend using simple summary statistics, log transform the data and calculate summary statistics followed by 
+                      exponentiating back and finally fitting a generalized least squares (GLS) model to the log transformed data
+                      (using an autocorrelation structure of order 1 as we simulate AR(1)) to account for the fact patients are 
+                      followed over time, finally back transforming the model estimates. It is important to always plot the data.")),
+              
+                 
                 shinyUI(pageWithSidebar(
                     headerPanel(" "),
                     
@@ -62,7 +65,8 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                       br(), br(),
                                       tags$style(".well {background-color:#b6aebd ;}"), 
                                       
-                                      div(h5(tags$span(style="color:blue", "Select the parameters using the sliders below...be patient as the GLS models can take ~30 secs to run..."))),
+                                      div(h5(tags$span(style="color:blue", "Play around with the parameters that generate 
+                                                       data using the sliders below. Hit simulate for another sample. Hit the other two buttons to see the code."))),
                                       tags$head(
                                           tags$style(HTML('#ab1{background-color:orange}'))
                                       ),
@@ -72,7 +76,7 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                       ),
                                       
                                      
-                                      selectInput("plot", "Select a plot:",
+                                      selectInput("plot", div(h5(tags$span(style="color:blue", "Select a plot/estimation approach:"))),
                                                   list("1 Means calculated on untransformed data" = "plot1",
                                                        "2 Medians calculated on untransformed data" = "plot1a",
                                                        "3 Log transformation, calculate statistics then back transform (exponentiate)" = "plot2", 
@@ -159,20 +163,22 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
      
                    ")), 
                                   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~end of section to add colour     
-                                  tabPanel("A1. Plot & LMM", 
+                                  tabPanel("Plotting longitudinal data and estimating averages with the help of a natural log transformation", 
                                            
-                                           p(strong("Plot the data. Always plot the data.")),
+                                           #h4(strong("Plot the data. Always plot the data.")),
                                            plotOutput("reg.plot"),
-                                           
-                                           p(strong("Summary Statistics, untransformed data")),
+                                           h4(strong("Figure 1. Patient profiles and estimate of central tendancy the average response at visits with 95% confidence")),
+                                          
                                            div(class="span7", verbatimTextOutput("reg.summary5")),
+                                           h4(strong("Table 1 Summary statistics, untransformed data")),
                                            
-                                           p(strong("Log transformation, calculate summary statistics then back transform (exponentiate)")),
-                                           div(class="span7", verbatimTextOutput("reg.summary3")),
                                            
-                                           p(strong("GLS model fit to natural logged data, the GLS model estimates and 95% CI are then exponentiated")),
-                                           div(class="span7", verbatimTextOutput("reg.summary4")
+                                           div(class="span7", verbatimTextOutput("reg.summary3"),
+                                           h4(strong("Table 2 Log transformation, calculate summary statistics then back transform (exponentiate)")),
                                            
+                                           
+                                           div(class="span7", verbatimTextOutput("reg.summary4")),
+                                           h4(strong("Table 3 GLS model fit to natural logged data, the GLS model estimates and 95% CI are then exponentiated")),
                                   ) ,
                                   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                   tabPanel("A2. GLS", value=3, 
@@ -265,8 +271,8 @@ server <- shinyServer(function(input, output   ) {
     #__________________________________________________________________________
     
     
-    shinyalert("Welcome! \nLet's simulate longitudinal data and estimate treatment effects",
-               "Generalized Least Squares (GLS)", 
+    shinyalert("Welcome! \nLet's simulate skewed longitudinal data and estimate averages",
+               "Hey Little Richard!", 
                type = "info")
     
     
@@ -459,7 +465,68 @@ server <- shinyServer(function(input, output   ) {
     
     
     #---------------------------------------------------------------------------
+    fit.regression2 <- reactive({
+        
+        data <- make.data()
+        
+        df <- data$d
+        
+        require(lmer)
+        require(dplyr)
+        
+        df$x <- df$VISIT
+        df$y <- log(df$value)
+        df$g <- df$ID
+        
+        
+        dfs<- df %>%
+            group_by(x) %>%
+            summarise(mu=mean(y,na.rm=T), sd=sd(y,na.rm=T), n=length(na.omit(y)), se=sd(y,na.rm=T)/sqrt(length(na.omit(y))),
+                      lo = mean(y,na.rm=T)-2*sd(y,na.rm=T)/sqrt(length(na.omit(y))),
+                      hi = mean(y,na.rm=T)+2*sd(y,na.rm=T)/sqrt(length(na.omit(y)) ))
+        
+        df1 <- merge(df,dfs,  by = intersect("x", "x"))
+        
+        f <-df1[,c("x","y","ID")]
+        
+        
+        f$g <- (f$ID)
+        f$x <- as.factor(f$x)
+        f<-plyr::arrange(f, g, x)
+        
+        g <- f$g
+        g <- as.vector(g)
+        f$id<-rep(seq_along( rle(g)$values ), times = rle(g)$lengths )
+        
+        
+        
+        ################################
+        
+        fit.res <- tryCatch(lmer(y ~    x + 0+ (1 + as.numeric(x) | id), data = f), 
+                            error=function(e) e)
+         
+        i <-  confint(fit.res )
+        ci <- i[grepl("VISIT*", rownames(i)), ]
+        fc <- fixef(f)
+        
+        se <-  fixef(f)  # just filling this , not needed
+        i <-  cbind(as.data.frame(fc), se, ci)
+        
+        estx <- as.data.frame(i)
+        
+        est <- exp(estx)            # exponentiate back
+        est$x<-as.numeric(1:input$J)
+        rownames(est) <- NULL
+        est <-  est[,c(5,1,2,3,4)]  
+        names(est) <- c('Visit','Estimate','se', 'Lower', 'Upper')
+      
+        return(list(fit.res2a=est , fit.res2b=fit.res ))
+    })     
     
+    
+    
+    
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
     # treatment effect estimate
     data.summ <- reactive({
@@ -559,7 +626,7 @@ server <- shinyServer(function(input, output   ) {
         est <- f$fit.res1
         
         
-        if (input$plot == "plot1") {
+        if (input$plot == "plot1") {   #MEANS
             
             
             df_summary <- df %>% # the names of the new data frame and the data frame to be summarised
@@ -658,7 +725,7 @@ server <- shinyServer(function(input, output   ) {
                                      length(unique(df$ID))," patients & arithmetic mean with 95% CI shown in black\nNumber of patient values at each time point") )
             )
             
-        } else if (input$plot == "plot1a") {
+        } else if (input$plot == "plot1a") {    #MEDIANS
             
             
                 
@@ -757,7 +824,7 @@ server <- shinyServer(function(input, output   ) {
             
             
             
-        }   else if (input$plot == "plot2") {
+        }   else if (input$plot == "plot2") {   # MEANS ON LOG THEN EXP
             
             
             df$lvalue <- log(df$value)  #log the GH values!!!!!!!!!!!!!!!
@@ -838,7 +905,7 @@ server <- shinyServer(function(input, output   ) {
         
         
         # gls model 
-        else if (input$plot == "plot3") {
+        else if (input$plot == "plot3") {   # GLS ON LOG THEN EXP
             
             df$x <- df$VISIT
             df$y <- (df$value)
@@ -895,11 +962,11 @@ server <- shinyServer(function(input, output   ) {
             
             
         }
-        
-        # gls model 
-        else if (input$plot == "plot4") {
+          
+        else if (input$plot == "plot4") {  # COMPARISON PLOT
             
-            # nop trans
+            #_______________________________________________________________________________________
+            # nop transformation
             
             df_summary <- df %>% # the names of the new data frame and the data frame to be summarised
                 group_by(VISIT, variable) %>%                # the grouping variable
@@ -917,8 +984,7 @@ server <- shinyServer(function(input, output   ) {
             notran$Variable <- NULL
             #_______________________________________________________________________________________
             # medians
-            
-            
+
             df_summary <- df %>% # the names of the new data frame and the data frame to be summarised
                 group_by(VISIT, variable) %>%                # the grouping variable
                 summarise(Estimate = median(value, na.rm=TRUE),  # calculates the mean of each group
@@ -935,15 +1001,8 @@ server <- shinyServer(function(input, output   ) {
             names(meds) <- namz
             
             meds$Variable <- NULL
-            
-            
-            
-            
-            
-            
-            #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-            
-            
+             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            # LOG , calc mean then exp
             df$lvalue <- log(df$value)  #log the GH values!!!!!!!!!!!!!!!
             
             
@@ -973,7 +1032,9 @@ server <- shinyServer(function(input, output   ) {
             est$type <- "GLS model estimates"
             
             dd <- rbind( notran,meds, tran, est)
-            
+            #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            # plot
+            #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             
             # The errorbars overlapped, so use position_dodge to move them horizontally
             pd <- position_dodge(0.1) # move them .05 to the left and right
