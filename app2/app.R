@@ -23,8 +23,7 @@ library(shinythemes)        # more funky looking apps
 p1 <- function(x) {formatC(x, format="f", digits=1)}
 p2 <- function(x) {formatC(x, format="f", digits=2)}
 options(width=100)
-colz = c("lightblue", "blue",  "lightgreen", "darkgreen")
-
+ 
 # function to create longitudinal data
 is.even <- function(x){ x %% 2 == 0 }
 
@@ -82,9 +81,9 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                   
                                   div(
                                       actionButton(inputId='ab1', label="Shiny",   icon = icon("th"), 
-                                                   onclick ="window.open('https://raw.githubusercontent.com/eamonn2014/Longitudinal-RCT-treatment-effect-estimation-simulation/master/app/app.R', '_blank')"),   
+                                                   onclick ="window.open('https://raw.githubusercontent.com/eamonn2014/plotting-longitudinal-data2/master/app2/app.R', '_blank')"),   
                                       actionButton(inputId='ab1', label="R code",   icon = icon("th"), 
-                                                   onclick ="window.open('https://raw.githubusercontent.com/eamonn2014/Longitudinal-RCT-treatment-effect-estimation-simulation/master/R%20code%20to%20simulate%20and%20analyse%20longitudinal%20RCT.R', '_blank')"),   
+                                                   onclick ="window.open('https://raw.githubusercontent.com/eamonn2014/plotting-longitudinal-data2/master/plotting-longitudinal-data.R', '_blank')"),   
                                       actionButton("resample", "Simulate a new sample"),
                                       br(), br(),
                                       tags$style(".well {background-color:#b6aebd ;}"), 
