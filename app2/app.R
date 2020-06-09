@@ -42,14 +42,36 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                 h2("Plotting longitudinal data and estimating averages with the help of a natural log transformation"),
                 
                 h4(p("A laboratory measurment is taken on patients over time. 
-                Within visit windows the times at which the measurement is grouped for all patients.
-                We have simulated data that has a skewed distribution. We describe the average
+                Within visit windows the times at which the measurement is grouped for all patients into common visits.
+                We simulate data that has a skewed distribution. Many laboratory measurments have skewed distibutions as analyte amounts cannot be negative.
+                        We describe the average
                       trend using simple summary statistics, log transform the data and calculate summary statistics followed by 
-                      exponentiating back and finally fitting a generalized least squares (GLS) model to the log transformed data
+                      exponentiating back, we also fit a generalized least squares (GLS) model to the log transformed data
                       (using an autocorrelation structure of order 1 as we simulate AR(1) to account for the fact patients are 
-                      followed over time, finally back transforming the model estimates. It is important to always plot the data.")),
+                      followed over time, finally back transforming the model estimates. We also fit a linear mixed model to the data.
+                     It cannot be emphasized enough, always plot the data.")),
                 
-                h4(p("The first plot.")),
+                h4(p("The natural log transformation is used throughout. The first plot selection '1 Means calculated on untransformed data',
+                is a plot of the raw data with means at each timepoint
+                 with arithmetic means and 95%CIs. We can see heavily skewed data and that this plot is not very illuminating. 
+                 The next plot '1a Means calculated on untransformed data, antilog presentation' presents the same arithmetic mean and 95%CIs 
+                 as the previous plot. Here the data are 
+                 log transformed, note the means and CIs are calculated on the untransformed data, 
+                 then logged for presentation with antilog y tick values. This is not recommended 
+                 but serves to show the untransformed arithmetic means more clearer presented than the first plot. 
+                 Skip over '2 Medians calculated on untransformed data' which is not very illuminating.
+                 The next selection '2a Medians calculated on untransformed data, antilog presentation' is generated using the same 
+                 approach as the figure 1a. That is, calculate medians and CIs; Log transform the data; Log transform medians and CIs. 
+                 Plot the data replacing y-axis tick marks with antilog values. This approach is acceptable for presenting the median.
+                    Next we have the best approach for calculation and presentation of the arthmetic means. The selection  
+                    '3 Log transformation, calculate statistics then back transform (exponentiate)' is self explanatory.
+                    Two final approaches are based on modelling. As our data
+                    is longitudinal in nature these are the best approaches. 
+                    First the data is logged, the model then fitted and the estimates then exponentiated. 
+                    For presentation 
+                    log the data, estimates and confidence bounds, plot and replace the y axis ticks with antilogs. 
+                    The 6th selection shows a comparison of the approaches and the 7th selection diagnostics from the GLS model fit.  
+                     ")),
                 
                 
                 shinyUI(pageWithSidebar(
@@ -175,7 +197,7 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                            
                                            #h4(strong("Plot the data. Always plot the data.")),
                                            plotOutput("reg.plot"),
-                                           h4(strong("Figure 1. Patient profiles and estimate of central tendancy the average response at visits with 95% confidence")),
+                                           h4(strong("Figure 1. Refer to the plot selection option for a description of the presentation")),
                                            
                                            div(class="span7", verbatimTextOutput("reg.summary5")),
                                            h4(strong("Table 1 Summary statistics, untransformed data")),
@@ -759,7 +781,7 @@ server <- shinyServer(function(input, output   ) {
             
             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-            if (input$plot == "plot1x") {   #untransformed means
+            if (input$plot == "plot1x") {   #untransformed means, transformed data
                 
              #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             # step 1 calcualte means and CIs
@@ -936,7 +958,7 @@ server <- shinyServer(function(input, output   ) {
             
             print(pr1 + labs(y="Response", x = "Visit") + 
                       ggtitle(paste0("Individual responses ",
-                                     length(unique(df$ID))," patients & arithmetic mean with 95% CI shown in black\nNumber of patient values at each time point") )
+                                     length(unique(df$ID))," patients & medians with 95% CI shown in black\nNumber of patient values at each time point") )
             )
             
             
@@ -1027,7 +1049,7 @@ server <- shinyServer(function(input, output   ) {
             
             print(pr1 + labs(y="Response", x = "Visit") + 
                       ggtitle(paste0("Individual responses ",
-                                     length(unique(df$ID))," patients & arithmetic mean with 95% CI shown in black\nNumber of patient values at each time point") )
+                                     length(unique(df$ID))," patients & medians with 95% CI shown in black\nNumber of patient values at each time point") )
             )
             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1038,7 +1060,7 @@ server <- shinyServer(function(input, output   ) {
             
              
               
-                df$lvalue <- log(df$value)  #log the GH values!!!!!!!!!!!!!!!
+                df$lvalue <- log(df$value)  #log the values
                   
 
             est <- df_summary <- df %>% # the names of the new data frame and the data frame to be summarised
@@ -1116,85 +1138,7 @@ server <- shinyServer(function(input, output   ) {
             
             
             
-            if (input$logplot == "no") { 
-                
-                
-                df$lvalue <-  (df$value)  #!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                
-                
-                est <- df_summary <- df %>% # the names of the new data frame and the data frame to be summarised
-                    group_by(VISIT, variable) %>%                # the grouping variable
-                    summarise(mean_PL = mean(lvalue, na.rm=TRUE),  # calculates the mean of each group
-                              sd_PL = sd(lvalue, na.rm=TRUE),      # calculates the sd of each group
-                              n_PL = length(na.omit(lvalue)),      # calculates the sample size per group
-                              SE_PL = sd(lvalue, na.rm=TRUE)/sqrt(length(na.omit(lvalue)))) # SE of each group
-                
-                
-                df_summary1 <- merge(df, df_summary)  # merge stats to dataset
-                
-                # dont want error bars to exceed plausible range
-                df_summary1$L2SE <- df_summary1$mean_PL - 2*df_summary1$SE_PL
-                df_summary1$H2SE <- df_summary1$mean_PL + 2*df_summary1$SE_PL
-                
-                #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
-                pr1 <- ggplot((df_summary1), aes(x = VISIT, y =lvalue, color = ID)) +
-                    geom_line( size=.5, alpha=0.2) +
-                    stat_summary(geom="line",  fun=mean, colour="black", lwd=0.5) +  
-                    stat_summary(geom="point", fun=mean, colour="black") +
-                    geom_errorbar(data=(df_summary1), 
-                                  aes( ymin=L2SE, ymax=H2SE ), color = "black",
-                                  width=0.05, lwd = 0.05) +
-                    
-                    scale_x_continuous(breaks = c(unique(df$VISIT)),
-                                       labels = c(unique(df$VISIT))
-                    ) +
-                    
-                    #!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                    # scale_y_continuous(
-                    #     breaks= 
-                    #         c(     (0.01), log(.1),  log(1) , log(10) , log(100) ) ,  # this is where the values go
-                    #     labels= c(0.01,      0.1 ,     1,       10 ,      100)) +      
-                    #!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                 
-                EnvStats::stat_n_text(size = 4, y.pos = max(df_summary1$lvalue, na.rm=T)*1.1 , y.expand.factor=0, 
-                                      angle = 0, hjust = .5, family = "mono", fontface = "plain") +#295 bold
-                    
-                    theme(panel.background=element_blank(),
-                          # axis.text.y=element_blank(),
-                          # axis.ticks.y=element_blank(),
-                          # https://stackoverflow.com/questions/46482846/ggplot2-x-axis-extreme-right-tick-label-clipped-after-insetting-legend
-                          # stop axis being clipped
-                          plot.title=element_text(), plot.margin = unit(c(5.5,12,5.5,5.5), "pt"),
-                          legend.text=element_text(size=12),
-                          legend.title=element_text(size=14),
-                          legend.position="none",
-                          axis.text.x  = element_text(size=10),
-                          axis.text.y  = element_text(size=10),
-                          axis.line.x = element_line(color="black"),
-                          axis.line.y = element_line(color="black"),
-                          plot.caption=element_text(hjust = 0, size = 7))
-                
-                
-                print(pr1 + labs(y="Response", x = "Visit") + 
-                          ggtitle(paste0("Individual responses ",length(unique(df$ID))," patients & mean response ± 2 SE shown in black\nNumber of patient values at each time point") )
-                )
-                
-                est$L2SE <- est$mean_PL - 2*est$SE_PL
-                est$H2SE <- est$mean_PL + 2*est$SE_PL
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
-            }
+
             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1252,7 +1196,7 @@ server <- shinyServer(function(input, output   ) {
             
             print(p1 + labs(y="Response", x = "Visit") +
                       ggtitle(paste0("Individual responses ",
-                                     length(unique(dplot$ID))," patients & modelled mean response with 95% CI shown in black\nNumber of patient values at each time point") )
+                                     length(unique(dplot$ID))," patients & modelled mean response with 95% CI from GLS model shown in black\nNumber of patient values at each time point") )
             )
             
             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1313,7 +1257,7 @@ server <- shinyServer(function(input, output   ) {
             
             print(p1 + labs(y="Response", x = "Visit") +
                       ggtitle(paste0("Individual responses ",
-                                     length(unique(dplot$ID))," patients & modelled mean response with 95% CI shown in black\nNumber of patient values at each time point") )
+                                     length(unique(dplot$ID))," patients & modelled mean response with 95% CI from LMM shown in black\nNumber of patient values at each time point") )
             )
             
             
@@ -1384,11 +1328,11 @@ server <- shinyServer(function(input, output   ) {
             est<- as.data.frame(est)
             meds <- as.data.frame(meds)
             
-            notran$type <- "Untransformed means"
-            meds$type <- "Untransformed medians"
-            tran$type <- "Log transformed means"
-            est$type <- "GLS model estimates"
-            lmm.est$type <- "LMM model estimates"
+            notran$Approach <- "Untransformed means"
+            meds$Approach <- "Untransformed medians"
+            tran$Approach <- "Log transformed means"
+            est$Approach <- "GLS model estimates"
+            lmm.est$Approach <- "LMM model estimates"
             dd <- rbind( notran,meds, tran, est, lmm.est)
             
             
@@ -1435,11 +1379,10 @@ server <- shinyServer(function(input, output   ) {
             
         }  else if (input$plot == "plot5") { # residual plots
             
-            
             f <- fit.regression()
             
             fit <- f$fit.res
-            
+             
             data <- make.data()
             
             d2 <- data$d
@@ -1448,19 +1391,34 @@ server <- shinyServer(function(input, output   ) {
             
             d2$fitted <- fitted(fit)
             
-            yl <- ylab('Residuals') 
+            yl <- ylab('Residuals')
             
             xl <- xlab("time")
             
-            p1 <- ggplot(d2 , aes(x=fitted , y=resid)) + geom_point () + yl 
+            p1 <- ggplot(d2 , aes(x=fitted , y=resid)) + geom_point (   colour="#69b3a2") + yl
             
-            p3 <- ggplot(d2 , aes(x=VISIT, y=resid)) +  geom_point () + yl  + xl +
-                stat_summary(fun.data ="mean_sdl", geom='smooth') 
+            p3 <- ggplot(d2 , aes(x=VISIT , y=resid )) +  geom_point ( colour="#69b3a2") + yl  + xl +
+                stat_summary(fun.data ="mean_sdl", geom='smooth')
             
-            p4 <- ggplot(d2 , aes(sample=resid)) + stat_qq() +
-                geom_abline(intercept=mean(r), slope=sd(r)) + yl 
+            p4 <- ggplot(d2 , aes(sample=resid )) + stat_qq(colour="#69b3a2") +
+                geom_abline(intercept=mean(r), slope=sd(r)  ,  colour="black") +
+                xlab('Residuals')   +
+                ggtitle( " ")
             
-            gridExtra::grid.arrange(p1,  p3, p4, ncol=2) #
+     
+            library(gridExtra)
+            library(grid)
+            df <- data.frame(Residuals = r)
+            p5 <- ggplot(df, aes(x = Residuals)) +
+                geom_histogram(aes(y =..density..),
+                               #breaks = seq(-50, 50, by = 2),
+                               colour = "black",
+                               fill = "#69b3a2") +
+                stat_function(fun = dnorm, args = list(mean = 0, sd = sigma(fit)  ))
+            
+            grid.arrange(p1,  p3, p4,p5, ncol=2,
+                         
+                         top = textGrob(paste0(input$Plot, " GLS model fit diagnostics"),gp=gpar(fontsize=20,font=3)))
             
             
         }
@@ -1471,7 +1429,7 @@ server <- shinyServer(function(input, output   ) {
    }) 
     
     
-    
+  
     #---------------------------------------------------------------------------
     # Show the summaries
     
