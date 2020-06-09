@@ -360,17 +360,17 @@ server <- shinyServer(function(input, output   ) {
         
         
         ### set number of individuals
-        n <- 100
-        beta0 <-  1.1174
-        beta1 <- -0.2859 
-        ar.val <- 0.9
-        sigma <- 0.7995 
-        tau0  <-  1.2748
-        tau1  <-  0.2276
-        tau01 <- -0.62
+       # n <- 100
+       # beta0 <-  1.1174
+       # beta1 <- -0.2859 
+       # ar.val <- 0.9
+       # sigma <- 0.7995 
+       # tau0  <-  1.2748
+       # tau1  <-  0.2276
+       # tau01 <- -0.62
         
         ### maximum number of possible observations
-        m <- 6
+       # m <- 6
         p <- round(runif(n,2,m))
         
         ### simulate observation moments (assume everybody has 1st obs)
@@ -1345,7 +1345,7 @@ server <- shinyServer(function(input, output   ) {
             # The errorbars overlapped, so use position_dodge to move them horizontally
             pd <- position_dodge(0.1) # move them .05 to the left and right
             
-            pd1 <- ggplot(dd, aes(x= Visit, y=Estimate, colour=type)) + 
+            pd1 <- ggplot(dd, aes(x= Visit, y=Estimate, colour=Approach)) + 
                 geom_errorbar(aes(ymin=Lower, ymax=Upper), width=.1, position=pd) +
                 geom_line(position=pd) +
                 geom_point(position=pd) +
