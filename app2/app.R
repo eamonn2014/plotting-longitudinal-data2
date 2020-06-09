@@ -81,8 +81,9 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                                        "2 Medians calculated on untransformed data" = "plot1a",
                                                        "3 Log transformation, calculate statistics then back transform (exponentiate)" = "plot2", 
                                                        "4 GLS model on  natural log data, exponentiated estimates with 95% CI" = "plot3" ,
+                                                       "6 LMM model on  natural log data, exponentiated estimates with 95% CI" = "plot3a",
                                                        "5 Estimate comparison plot" = "plot4",
-                                                       "6 GLS model diagnostics" = "plot5"
+                                                       "7 GLS model diagnostics" = "plot5"
                                                   )),
                                       
                                       
@@ -629,6 +630,7 @@ server <- shinyServer(function(input, output   ) {
         f <- fit.regression()
         est <- f$fit.res1
         
+        lmm.est <- fit.regression2()$fit.res2a
         
         if (input$plot == "plot1") {   #MEANS
             
@@ -905,11 +907,7 @@ server <- shinyServer(function(input, output   ) {
             est$L2SE <- est$mean_PL - 2*est$SE_PL
             est$H2SE <- est$mean_PL + 2*est$SE_PL
             
-        } 
-        
-        
-        # gls model 
-        else if (input$plot == "plot3") {   # GLS ON LOG THEN EXP
+        }  else if (input$plot == "plot3") {   # GLS ON LOG THEN EXP
             
             df$x <- df$VISIT
             df$y <- (df$value)
@@ -963,8 +961,65 @@ server <- shinyServer(function(input, output   ) {
                                      length(unique(dplot$ID))," patients & modelled mean response with 95% CI shown in black\nNumber of patient values at each time point") )
             )
             
+            #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+            
+        }  else if (input$plot == "plot3a") {   # LMM ON LOG THEN EXP
+            
+            df$x <- df$VISIT
+            df$y <- (df$value)
+            df$g <- df$ID
+            
+            library(scales)
+            
+            dplot <- merge(lmm.est,  df , by.x="Visit", by.y="VISIT")
+            
+            dplot <- dplot[complete.cases(dplot),]
             
             
+            p <- ggplot(data = dplot, aes(x=Visit , y=Estimate, group=1)) +
+                geom_point() + geom_line() +   guides(color=FALSE) +
+                geom_errorbar(aes(ymin=Lower, ymax=Upper ), color="black", width=.05, lwd=.2) 
+            
+            p1 <-  p +geom_line(data=df, aes(x = x, y = y, color = g, group=g),size=0.5,alpha=.2)  +
+                theme(text = element_text(size=10),
+                      axis.text.x = element_text(angle = 0, vjust = 1, hjust=.5)) +
+                
+                scale_y_continuous(breaks=c(0.01,      0.1 ,     1,       10 ,      100), trans='log', labels = comma) +
+                
+                
+                ylab("Response")  +
+                xlab("Visit")  +
+                
+                
+                scale_x_continuous(breaks = c(unique(df$VISIT)),
+                                   c(unique(df$VISIT))) +   # labels = comma) + #
+                
+                EnvStats::stat_n_text(size = 4, y.pos = max(log(dplot$value), na.rm=T)*1.1 ,
+                                      y.expand.factor=0,  angle = 0, hjust = .5, family = "mono", fontface = "plain") +#295 bold
+                
+                
+                theme(panel.background=element_blank(),
+                      # axis.text.y=element_blank(),
+                      # axis.ticks.y=element_blank(),
+                      # https://stackoverflow.com/questions/46482846/ggplot2-x-axis-extreme-right-tick-label-clipped-after-insetting-legend
+                      # stop axis being clipped
+                      plot.title=element_text(), plot.margin = unit(c(5.5,12,5.5,5.5), "pt"),
+                      legend.text=element_text(size=12),
+                      legend.title=element_text(size=14),
+                      axis.text.x  = element_text(size=10),
+                      axis.text.y  = element_text(size=10),
+                      axis.line.x = element_line(color="black"),
+                      axis.line.y = element_line(color="black"),
+                      plot.caption=element_text(hjust = 0, size = 7))
+            
+            print(p1 + labs(y="Response", x = "Visit") +
+                      ggtitle(paste0("Individual responses ",
+                                     length(unique(dplot$ID))," patients & modelled mean response with 95% CI shown in black\nNumber of patient values at each time point") )
+            )
+            
+    
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#    
+        
         } else if (input$plot == "plot4") {  # COMPARISON PLOT
             
             #_______________________________________________________________________________________
@@ -1071,12 +1126,7 @@ server <- shinyServer(function(input, output   ) {
             
             
             
-        }
-        
-        
-        # residual plots
-        
-        else if (input$plot == "plot5") {
+        }  else if (input$plot == "plot5") { # residual plots
             
             
             f <- fit.regression()
