@@ -181,7 +181,7 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                                h4(strong("Table 3 GLS model fit to natural logged data, the GLS model estimates and 95% CI are then exponentiated")),
                                                
                                                div(class="span7", verbatimTextOutput("reg.summary6")),
-                                               h4(strong("Table 3 LMM model fit to natural logged data, the LMM model estimates and 95% CI are then exponentiated")),
+                                               h4(strong("Table 4 LMM model fit to natural logged data, the LMM model estimates and 95% CI are then exponentiated")),
                                            ) ,
                                            #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                            tabPanel("A2. GLS", value=3, 
@@ -468,7 +468,7 @@ server <- shinyServer(function(input, output   ) {
     
     
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    
+    # LMM
     fit.regression2 <- reactive({
         
         data <- make.data()
@@ -522,6 +522,7 @@ server <- shinyServer(function(input, output   ) {
         est <-  est[,c(5,1,2,3,4)]  
         names(est) <- c('Visit','Estimate','se', 'Lower', 'Upper')
         
+        est$se <- NULL
         return(list(fit.res2a=est , fit.res2b=fit.res ))
     })     
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -964,9 +965,7 @@ server <- shinyServer(function(input, output   ) {
             
             
             
-        }
-        
-        else if (input$plot == "plot4") {  # COMPARISON PLOT
+        } else if (input$plot == "plot4") {  # COMPARISON PLOT
             
             #_______________________________________________________________________________________
             # nop transformation
