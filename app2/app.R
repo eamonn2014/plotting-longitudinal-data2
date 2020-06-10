@@ -23,6 +23,9 @@ library(shinythemes)        # more funky looking apps
 p1 <- function(x) {formatC(x, format="f", digits=1)}
 p2 <- function(x) {formatC(x, format="f", digits=2)}
 options(width=100)
+
+# ggplot line settings
+sizeG=.5; alphaG=0.9
  
 # function to create longitudinal data
 is.even <- function(x){ x %% 2 == 0 }
@@ -73,7 +76,7 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                 
                 
                 h4(p("
-                Note the inputs simulate data for the analyses and the final step is the simulated response is exponentiated")),
+                Note the inputs simulate data for the analyses. Finally the simulated response is exponentiated.")),
                 
                 shinyUI(pageWithSidebar(
                     headerPanel(" "),
@@ -519,12 +522,12 @@ server <- shinyServer(function(input, output   ) {
 #     pd <- position_dodge(.4)
 #     
 #     dat$value <-  exp(dat$value)
-#     
+# 
 #     plot1 <-  ggplot(dat,   aes (x = VISIT, y =    (value), group = ID, color = ID)) +
 #         geom_line() + geom_point() + ylab("response") + xlab("visit") +
 #        stat_summary(fun=mean,geom="line", colour="black",lwd=1,aes(group=variable ) ) +
 #         # geom_smooth(method=lm, se=FALSE, fullrange=TRUE )+
-#         # scale_shape_manual(values=c(3, 16))+ 
+#         # scale_shape_manual(values=c(3, 16))+
 #         #scale_color_manual(values=c('#999999','#E69F00'))+
 #         theme(legend.position="top") +
 #         #xlim(0, J) +
@@ -543,9 +546,9 @@ server <- shinyServer(function(input, output   ) {
 #               axis.line.x = element_line(color="black"),
 #               axis.line.y = element_line(color="black"),
 #               plot.caption=element_text(hjust = 0, size = 7))
-#     
+# 
 #     plot1
-#     
+
 #     return(list(d=dat))
 #     
 # }) 
@@ -842,7 +845,7 @@ server <- shinyServer(function(input, output   ) {
             
             
             pr1 <- ggplot((df_summary1), aes(x = VISIT, y =value, color = ID)) +
-                geom_line( size=.5, alpha=0.2) +
+                geom_line( size=sizeG, alpha=alphaG) +
                 #scale_color_gradient(low = "blue", high = "red")+
                 #scale_color_brewer(palette = "Dark2") +
                 stat_summary(geom="line",  fun=mean, colour="black", lwd=0.5) +  # , linetype="dashed"
@@ -913,7 +916,8 @@ server <- shinyServer(function(input, output   ) {
                       axis.text.y  = element_text(size=10),
                       axis.line.x = element_line(color="black"),
                       axis.line.y = element_line(color="black"),
-                      plot.caption=element_text(hjust = 0, size = 7))
+                      plot.caption=element_text(hjust = 0, size = 7)) +
+                            scale_color_hue(direction = -1, h.start=90)
             
             
             
@@ -957,7 +961,7 @@ server <- shinyServer(function(input, output   ) {
             # plot the raw data
             
             pr1 <- ggplot((df_summary1), aes(x = VISIT, y =lvalue, color = ID)) +
-                geom_line( size=.5, alpha=0.2) +
+                geom_line(size=sizeG, alpha=alphaG) +
                 geom_point( data=df_summary1, aes(x=VISIT , y=mean_PL), colour="red")           +
                 geom_line( data=df_summary1, aes(x=VISIT , y=mean_PL), colour="red") +
                 geom_errorbar(data=df_summary1, 
@@ -976,6 +980,7 @@ server <- shinyServer(function(input, output   ) {
                                        c(unique(df_summary1$VISIT))
                 ) +
                 
+                scale_color_hue(direction = -1, h.start=90) +
                 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 # create visit counts log the y position 
                 
@@ -1038,7 +1043,7 @@ server <- shinyServer(function(input, output   ) {
             df_summary1$H2SE <- df_summary1$medianU
             
             pr1 <- ggplot((df_summary1), aes(x = VISIT, y =value, color = ID)) +
-                geom_line( size=.5, alpha=0.2) +
+                geom_line( size=sizeG, alpha=alphaG) +
                 #scale_color_gradient(low = "blue", high = "red")+
                 #scale_color_brewer(palette = "Dark2") +
                 stat_summary(geom="line",  fun=median, colour="black", lwd=0.5) +  # , linetype="dashed"
@@ -1078,7 +1083,7 @@ server <- shinyServer(function(input, output   ) {
                 ) +
                 
                 
-                
+                scale_color_hue(direction = -1, h.start=90) +
                 
                 EnvStats::stat_n_text(size = 4, y.pos = max(df_summary1$value, na.rm=T)*1.1 , y.expand.factor=0, 
                                       angle = 0, hjust = .5, family = "mono", fontface = "plain") + #295 bold
@@ -1151,7 +1156,7 @@ server <- shinyServer(function(input, output   ) {
             # plot the raw data
             
             pr1 <- ggplot((df_summary1), aes(x = VISIT, y =lvalue, color = ID)) +
-                geom_line( size=.5, alpha=0.2) +
+                geom_line( size=sizeG, alpha=alphaG) +
                 geom_point( data=df_summary1, aes(x=VISIT , y=mean_PL), colour="red")           +
                 geom_line( data=df_summary1, aes(x=VISIT , y=mean_PL), colour="red") +
                 geom_errorbar(data=df_summary1, 
@@ -1169,7 +1174,7 @@ server <- shinyServer(function(input, output   ) {
                                    labels = 
                                        c(unique(df_summary1$VISIT))
                 ) +
-                
+                scale_color_hue(direction = -1, h.start=90) +
                 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 # create visit counts log the y position 
                 
@@ -1225,7 +1230,7 @@ server <- shinyServer(function(input, output   ) {
             
             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
             pr1 <- ggplot((df_summary1), aes(x = VISIT, y =lvalue, color = ID)) +
-                geom_line( size=.5, alpha=0.2) +
+                geom_line( size=sizeG, alpha=alphaG) +
                 stat_summary(geom="line",  fun=mean, colour="black", lwd=0.5) +  
                 stat_summary(geom="point", fun=mean, colour="black") +
                 geom_errorbar(data=(df_summary1), 
@@ -1254,7 +1259,7 @@ server <- shinyServer(function(input, output   ) {
             #       axis.line = element_line(colour = "black", size=0.05),
             #       panel.border = element_rect(colour = "black", fill=NA, size=0.05)
             # ) +
-            
+            scale_color_hue(direction = -1, h.start=90) +
             EnvStats::stat_n_text(size = 4, y.pos = max(df_summary1$lvalue, na.rm=T)*1.1 , y.expand.factor=0, 
                                   angle = 0, hjust = .5, family = "mono", fontface = "plain") +#295 bold
                 
@@ -1304,13 +1309,15 @@ server <- shinyServer(function(input, output   ) {
             dplot <- dplot[complete.cases(dplot),]
             
             
-            p <- ggplot(data = dplot, aes(x=Visit , y=Estimate, group=1)) +
-                geom_point() + geom_line() +   guides(color=FALSE) +
-                geom_errorbar(aes(ymin=Lower, ymax=Upper ), color="black", width=.05, lwd=.2) 
+            p <- ggplot(data = dplot, aes(x=Visit , y=Estimate, group=1)) 
+                
             
-            p1 <-  p +geom_line(data=df, aes(x = x, y = y, color = g, group=g),size=0.5,alpha=.2)  +
+            p1 <-  p +geom_line(data=df, aes(x = x, y = y, color = g, group=g), size=sizeG, alpha=alphaG)  +
                 theme(text = element_text(size=10),
                       axis.text.x = element_text(angle = 0, vjust = 1, hjust=.5)) +
+                geom_point() + geom_line() +   guides(color=FALSE) +
+                geom_errorbar(aes(ymin=Lower, ymax=Upper ), color="black", width=.05, lwd=.2) +
+                
                 
                 scale_y_continuous(breaks=c(0.01,      0.1 ,     1,       10 ,      100), trans='log', labels = comma) +
                 
@@ -1322,6 +1329,7 @@ server <- shinyServer(function(input, output   ) {
                 scale_x_continuous(breaks = c(unique(df$VISIT)),
                                    c(unique(df$VISIT))) +   # labels = comma) + #
                 
+                scale_color_hue(direction = -1, h.start=90) +
                 EnvStats::stat_n_text(size = 4, y.pos = max(log(dplot$value), na.rm=T)*1.1 ,
                                       y.expand.factor=0,  angle = 0, hjust = .5, family = "mono", fontface = "plain") +#295 bold
                 
@@ -1366,10 +1374,11 @@ server <- shinyServer(function(input, output   ) {
             
             
             p <- ggplot(data = dplot, aes(x=Visit , y=Estimate, group=1)) +
+                geom_line(data=df, aes(x = x, y = y, color = g, group=g), size=sizeG, alpha=alphaG)  +
                 geom_point() + geom_line() +   guides(color=FALSE) +
                 geom_errorbar(aes(ymin=Lower, ymax=Upper ), color="black", width=.05, lwd=.2) 
             
-            p1 <-  p +geom_line(data=df, aes(x = x, y = y, color = g, group=g),size=0.5,alpha=.2)  +
+            p1 <-  p +
                 theme(text = element_text(size=10),
                       axis.text.x = element_text(angle = 0, vjust = 1, hjust=.5)) +
                 
@@ -1383,6 +1392,8 @@ server <- shinyServer(function(input, output   ) {
                 scale_x_continuous(breaks = c(unique(df$VISIT)),
                                    c(unique(df$VISIT))) +   # labels = comma) + #
                 
+                scale_color_hue(direction = -1, h.start=90) +
+            
                 EnvStats::stat_n_text(size = 4, y.pos = max(log(dplot$value), na.rm=T)*1.1 ,
                                       y.expand.factor=0,  angle = 0, hjust = .5, family = "mono", fontface = "plain") +#295 bold
                 
