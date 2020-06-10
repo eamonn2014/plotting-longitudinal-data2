@@ -72,11 +72,14 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                     For presentation 
                     log the data, estimates and confidence bounds, plot and replace the y axis ticks with antilogs. 
                     The 6th selection shows a comparison of the approaches and the 7th selection diagnostics from the GLS model fit.  
+                    
                      ")),
                 
                 
                 h4(p("
-                Note the inputs simulate data for the analyses. Finally the simulated response is exponentiated.")),
+                Note the inputs simulate the data for the analyses and the final simulated response is exponentiated. 
+                     The second tab is for interest, we run a linear mixed models on the simulated response (do we recover the inputs?) 
+                     and on the exponentiated simulated response.")),
                 
                 shinyUI(pageWithSidebar(
                     headerPanel(" "),
@@ -216,84 +219,18 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                                
                                                div(class="span7", verbatimTextOutput("reg.summary6")),
                                                h4(strong("Table 4 LMM model fit to natural logged data, the LMM model estimates and 95% CI are then exponentiated")),
-                                           ) ,
+                                           ) ),
                                            #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                                           tabPanel("A2. GLS", value=3, 
+                                           tabPanel("Linear mixed model fitted to simulated data", value=3, 
                                                     
-                                                    # div(class="span7", verbatimTextOutput("reg.summary1")),
-                                                    # h4(paste("Table 2. GLS fit to simulated data, reflecting data generating mechanism, 
-                                                    #    treatment effect starting at baseline")), 
-                                                    
-                                           ) ,
-                                           #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                                           tabPanel("A3. GLS treatment effect", value=6, 
-                                                    # 
-                                                    # div(plotOutput("reg.plot2", width=fig.width, height=fig.height)), 
-                                                    # h4(paste("Figure 3. GLS fit to simulated data, treatment contrasts")), 
-                                                    # 
-                                                    # div(class="span7", verbatimTextOutput("reg.summary2c")),
-                                                    # h4(paste("Table 3. GLS fit to simulated data, treatment contrasts")), 
-                                                    
-                                           ) ,
-                                           #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                                           tabPanel("B1. Plots", 
-                                                    
-                                                    # div(plotOutput("reg.plot99", width=fig.width, height=fig.height)), 
-                                                    # h4(paste("Figure 4. Spaghetti plot of simulated data, every patient profile is plotted, treatment effect starting after baseline, with mean trend lines")), 
-                                                    # 
-                                                    # div(plotOutput("reg.plot33", width=fig.width, height=fig.height)),  
-                                                    # h4(paste("Figure 5. Boxplots of simulated data, reflecting treatment effect starting after baseline")), 
-                                                    
-                                           ) ,
-                                           
-                                           #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                                           tabPanel("B2. GLS & LMM", 
-                                                    
-                                                    # div(class="span7", verbatimTextOutput("reg.summaryb1")),
-                                                    # h4(paste("Table 4. GLS fit to simulated data, reflecting treatment effect starting after baseline")), 
-                                                    # div(class="span7", verbatimTextOutput("reg.summaryb2")),
-                                                    # h4(paste("Table 5. LMM fit to simulated data, reflecting treatment effect starting after baseline")), 
-                                                    
-                                           ) ,
-                                           #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                                           tabPanel("B3. GLS treatment effect", 
-                                                    
-                                                    # div(plotOutput("reg.plot2b", width=fig.width, height=fig.height)),  
-                                                    # h4(paste("Figure 6.  GLS fit to simulated data, treatment contrasts  treatment effect starting after baseline")), 
-                                                    # 
-                                                    # div(class="span7", verbatimTextOutput("reg.summaryb3copy")),
-                                                    # h4(paste("Table 6. GLS fit to simulated data,  reflecting treatment effect starting after baseline, treatment contrasts.")), 
-                                                    
-                                           ) ,
-                                           #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                                           tabPanel("B4. Diagnostics",
-                                                    # h4("Figure 7. Four residual plots to check for absence of trends in central tendency and in variability"),
-                                                    # div(plotOutput("res.diag", width=fig.width, height=fig.height)),       
-                                                    # p(strong("Upper left panel shows the baseline score on the x-axis. 
-                                                    #    Upper right panel shows shows time on the x-axis, note though the selected reference level is plotted first.
-                                                    #    Bottom left panel is the QQ plot for checking normality of residuals from the GLS fit.
-                                                    #    Bottom right panel is the histogram for checking normality of residuals from the GLS fit with ~N(mean=0, sd=GLS model sigma) curve superimposed.
-                                                    #    ")),
-                                           ),
-                                           
-                                           #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                                           tabPanel("C1. Data listing", value=3, 
-                                                    # 
-                                                    # h6("This is superior to a plain rtf output in that this can be sorted and filtered on the fly."),
-                                                    # DT::dataTableOutput("table1"),
-                                           ),
-                                           #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                                           tabPanel("D. Notes", value=3, 
-                                                    
-                                                    
-                                                    
-                                                    
+                                                    div(class="span7", verbatimTextOutput("reg.summary10")),
+                                                    h4(paste("Table 5. LMM on simulated data")), 
+                                                    div(class="span7", verbatimTextOutput("reg.summary9")),
+                                                    h4(paste("Table 6. LMM on exponentiated simulated data")), 
                                            ) 
-                                           
-                                           
-                                           
                                            #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                                  )
+                                           #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                                  
                                   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                               )
                               #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~end tab panels 
@@ -364,14 +301,14 @@ server <- shinyServer(function(input, output   ) {
 
 
         ### set number of individuals
-       n <- 100
-       beta0 <-  1.1174
-       beta1 <- -0.2859
-       ar.val <- 0.9
-       sigma <- 0.7995
-       tau0  <-  1.2748
-       tau1  <-  0.2276
-       tau01 <- -0.62
+       # n <- 100
+       # beta0 <-  1.1174
+       # beta1 <- -0.2859
+       # ar.val <- 0.9
+       # sigma <- 0.7995
+       # tau0  <-  1.2748
+       # tau1  <-  0.2276
+       # tau01 <- -0.62
 
         ### maximum number of possible observations
        # m <- 6
@@ -416,6 +353,25 @@ server <- shinyServer(function(input, output   ) {
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    
+ 
+   # run models
+   check <- reactive({
+        
+      data <- make.data()
+      
+      dat <- data$d
+   
+      f0 <-  lmer( (value) ~       VISIT * 1 + (1 + VISIT | ID), data = dat)
+      
+      f1 <-  lmer( log(value) ~    VISIT * 1 + (1 + VISIT | ID), data = dat)
+      
+      return(list(f0=f0, f1=f1))
+        
+    })
+   
+ 
+    
     
     
 #     make.data <- reactive({
@@ -1629,6 +1585,21 @@ server <- shinyServer(function(input, output   ) {
         # return(list(summary))
         
     })     
+    
+    output$reg.summary9 <- renderPrint({
+        
+        summary <- check()$f0
+        return(list(summary))
+        
+    })     
+    
+    output$reg.summary10 <- renderPrint({
+        
+        summary <- check()$f1
+        return(list(summary))
+    })     
+    
+    
     
     
 })
