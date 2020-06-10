@@ -224,9 +224,10 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                            tabPanel("Linear mixed model fitted to simulated data", value=3, 
                                                     
                                                     div(class="span7", verbatimTextOutput("reg.summary10")),
-                                                    h4(paste("Table 5. LMM on simulated data")), 
+                                                    h4(paste("Table 5. LMM on simulated data.")), 
                                                     div(class="span7", verbatimTextOutput("reg.summary9")),
-                                                    h4(paste("Table 6. LMM on exponentiated simulated data")), 
+                                                    h4(paste("Table 6. LMM on exponentiated simulated data. 
+                                                             The estimates should be similar to those in selection '1 Means calculated on untransformed data'")), 
                                            ) 
                                            #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                            #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -362,9 +363,17 @@ server <- shinyServer(function(input, output   ) {
       
       dat <- data$d
    
-      f0 <-  lmer( (value) ~       VISIT * 1 + (1 + VISIT | ID), data = dat)
+    #  f0 <-  lmer( (value) ~       VISIT * 1 + (1 + VISIT | ID), data = dat)
       
-      f1 <-  lmer( log(value) ~    VISIT * 1 + (1 + VISIT | ID), data = dat)
+    #  f1 <-  lmer( log(value) ~    VISIT * 1 + (1 + VISIT | ID), data = dat)
+      
+      dat$VISIT <- factor(dat$VISIT)
+      
+      f0 <- tryCatch(lmer(value ~    VISIT + 0+ (1 + as.numeric(VISIT) | ID), data = dat), 
+                          error=function(e) e)
+      
+      f1 <- tryCatch(lmer(log(value) ~    VISIT + 0+ (1 + as.numeric(VISIT) | ID), data = dat), 
+                     error=function(e) e)
       
       return(list(f0=f0, f1=f1))
         
