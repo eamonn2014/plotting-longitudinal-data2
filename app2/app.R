@@ -141,7 +141,7 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                       
                                       sliderInput("autocorrelation",    
                                                   div(h5(tags$span(style="color:blue", "Auto correlation"))),  ###
-                                                  min = -1, max = 1, value = c(.9), step=.1, ticks=FALSE),
+                                                  min = 0, max = 1, value = c(.9), step=.1, ticks=FALSE),
                                       
                                       sliderInput("beta0", 
                                                   div(h5(tags$span(style="color:blue", "Average intercept"))),
