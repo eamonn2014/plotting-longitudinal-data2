@@ -78,7 +78,7 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                 
                 h4(p("
                 Note the inputs simulate the data for the analyses and the final simulated response is exponentiated. 
-                     The second tab is for interest, we run a linear mixed models on the simulated response (do we recover the inputs?) 
+                     The second tab is for interest, we run linear mixed models on the simulated response  
                      and on the exponentiated simulated response.")),
                 
                 shinyUI(pageWithSidebar(
@@ -221,13 +221,15 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                                h4(strong("Table 4 LMM model fit to natural logged data, the LMM model estimates and 95% CI are then exponentiated")),
                                            ) ),
                                            #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                                           tabPanel("Linear mixed model fitted to simulated data", value=3, 
+                                           tabPanel("Linear mixed models fitted to simulated data", value=3, 
                                                     
+                                                    div(class="span7", verbatimTextOutput("reg.summary8")),
+                                                    h4(paste("Table 5. LMM on simulated data, numeric time variable.")), 
                                                     div(class="span7", verbatimTextOutput("reg.summary10")),
-                                                    h4(paste("Table 5. LMM on simulated data.")), 
+                                                    h4(paste("Table 6. LMM on simulated data.")), 
                                                     div(class="span7", verbatimTextOutput("reg.summary9")),
-                                                    h4(paste("Table 6. LMM on exponentiated simulated data. 
-                                                             The estimates should be similar to those in selection '1 Means calculated on untransformed data'")), 
+                                                    h4(paste("Table 7. LMM on exponentiated simulated data. 
+                                                             The estimates should be similar to those in selection '1 Means calculated on untransformed data', and Table 1")), 
                                            ) 
                                            #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                            #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -247,7 +249,7 @@ server <- shinyServer(function(input, output   ) {
     
     
     shinyalert("Welcome! \nLet's simulate skewed longitudinal data and estimate averages",
-               "Hey Little Richard!", 
+               #"Hey Little Richard!", 
                type = "info")
     
     
@@ -366,6 +368,8 @@ server <- shinyServer(function(input, output   ) {
     #  f0 <-  lmer( (value) ~       VISIT * 1 + (1 + VISIT | ID), data = dat)
       
     #  f1 <-  lmer( log(value) ~    VISIT * 1 + (1 + VISIT | ID), data = dat)
+      f <- tryCatch(lmer(log(value) ~    VISIT + (1 + as.numeric(VISIT) | ID), data = dat), 
+                     error=function(e) e)
       
       dat$VISIT <- factor(dat$VISIT)
       
@@ -375,7 +379,7 @@ server <- shinyServer(function(input, output   ) {
       f1 <- tryCatch(lmer(log(value) ~    VISIT + 0+ (1 + as.numeric(VISIT) | ID), data = dat), 
                      error=function(e) e)
       
-      return(list(f0=f0, f1=f1))
+      return(list(f0=f0, f1=f1, f=f))
         
     })
    
@@ -1594,7 +1598,12 @@ server <- shinyServer(function(input, output   ) {
         # return(list(summary))
         
     })     
-    
+    output$reg.summary8 <- renderPrint({
+        
+        summary <- check()$f
+        return(list(summary))
+        
+    })     
     output$reg.summary9 <- renderPrint({
         
         summary <- check()$f0
