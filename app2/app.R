@@ -72,6 +72,9 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                      ")),
                 
                 
+                h4(p("
+                Note the inputs simulate data for the analyses and the final step is the simulated response is exponentiated")),
+                
                 shinyUI(pageWithSidebar(
                     headerPanel(" "),
                     
@@ -122,7 +125,7 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                       ### maximum number of possible observations
                                       
                                       sliderInput("N",
-                                                  div(h5(tags$span(style="color:blue", "total number of subjects"))),
+                                                  div(h5(tags$span(style="color:blue", "Total number of subjects"))),
                                                   min=20, max=500, step=5, value=100, ticks=FALSE),
                                       
                                       sliderInput("J",
@@ -343,11 +346,11 @@ server <- shinyServer(function(input, output   ) {
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
     
     make.data <- reactive({
-        
+
         sample <- random.sample()
-        
+
         n     <-  sample$n
-        beta0 <-  sample$beta0 
+        beta0 <-  sample$beta0
         beta1 <-  sample$beta1
         sigma <-  sample$sigma
         ar.val <- sample$ar.val
@@ -355,65 +358,210 @@ server <- shinyServer(function(input, output   ) {
         tau1 <-   sample$tau1
         tau01 <-  sample$tau01
         m <-      sample$m
-        
-        
+
+
         ### set number of individuals
-       # n <- 100
-       # beta0 <-  1.1174
-       # beta1 <- -0.2859 
-       # ar.val <- 0.9
-       # sigma <- 0.7995 
-       # tau0  <-  1.2748
-       # tau1  <-  0.2276
-       # tau01 <- -0.62
-        
+       n <- 100
+       beta0 <-  1.1174
+       beta1 <- -0.2859
+       ar.val <- 0.9
+       sigma <- 0.7995
+       tau0  <-  1.2748
+       tau1  <-  0.2276
+       tau01 <- -0.62
+
         ### maximum number of possible observations
        # m <- 6
         p <- round(runif(n,2,m))
-        
+
         ### simulate observation moments (assume everybody has 1st obs)
         obs <- unlist(sapply(p, function(x) c(1, sort(sample(2:m, x-1, replace=FALSE)))))
         #obs = 10*(obs)
         ### set up data frame
         dat <- data.frame(id=rep(1:n, times=p), obs=obs)
-        
+
         ### simulate (correlated) random effects for intercepts and slopes
         mu  <- c(0,0)
         S   <- matrix(c(1, tau01, tau01, 1), nrow=2)
         tau <- c(tau0, tau1)
         S   <- diag(tau) %*% S %*% diag(tau)
         U   <- mvrnorm(n, mu=mu, Sigma=S)
-        
+
         ### simulate AR(1) errors and then the actual outcomes
         dat$eij <- unlist(sapply(p, function(x) arima.sim(model=list(ar=ar.val), n=x) * sqrt(1-ar.val^.2) * sigma))
-        dat$yij <- (beta0 + rep(U[,1], times=p)) + (beta1 + rep(U[,2], times=p)) *  log(dat$obs) + dat$eij 
-        
+        dat$yij <- (beta0 + rep(U[,1], times=p)) + (beta1 + rep(U[,2], times=p)) *  log(dat$obs) + dat$eij
+
         ### note: use arima.sim(model=list(ar=ar.val), n=x) * sqrt(1-ar.val^2) * sigma
         ### construction, so that the true error SD is equal to sigma
-        
+
         dat$yij <- exp(dat$yij)   # here I exponenitate to get observed data
-        
-        
+
+
         ### create grouped data object
         dat <- groupedData( (yij) ~ obs | id, data=dat)
-        
+
         dat$eij <- NULL
         names(dat )[names(dat) == "yij"]<-c("value")
         names(dat )[names(dat) == "obs"]<-c("VISIT")
         names(dat )[names(dat) == "id"]<-c("ID")
         dat$variable <- "BIOCHEM.B"
-        
+
         return(list(d=dat))
-        
-    }) 
+
+    })
+
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
+    
+#     make.data <- reactive({
+#         
+#         sample <- random.sample()
+#     # lets try different approach to simulation 
+#  
+#     n     <-  sample$n
+#     beta0 <-  sample$beta0 
+#     beta1 <-  sample$beta1
+#     error <-  sample$sigma
+#     #ar.val <- sample$ar.val
+#     q <-      sample$tau0
+#     s <-      sample$tau1
+#     r <-      sample$tau01
+#     J <-      sample$m
+#     
+#   
+#     # inputs
+#     dat <- flat.df <- NULL
+#      
+#     n <- 100                 # total patients
+#     J <- 8                   # maximum visit of each patient
+#     intercept   =  1.1174
+#     slope       = -0.2859
+#     trt         =  0 
+#     error       =  0.7995
+#     interaction =  0
+#     # random effects parameters
+#     q =  1.2748  # standard deviations for the intercept 
+#     r = -0.62    # random effects correlation of slope internet
+#     s =  0.2276  # standard deviations for slope
+#     
+#     
+#     
+#     
+#     
+#     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#     # set up patients and random treatment assignment
+#     
+#     unit.df <- data.frame(unit = c(1:N), treat = sample(1:1,   N, replace=TRUE) )  
+#     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#     unit.df <-  within(unit.df, {
+#         E.alpha.given.treat <-  intercept + 0      # trt is the true treatment effect
+#         E.beta.given.treat  <-  slope + interaction * treat   # interaction effect
+#     })
+#     #
+#     
+#     (unit.df)[1:40,]
+#     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#     # covariance matrix for random effects
+#     
+#     cov.matrix <- matrix(c(q^2, r * q * s, r * q * s, s^2), nrow = 2, byrow = TRUE)
+#     
+#     random.effects <- rmvnorm(N, mean = c(0, 0), sigma = cov.matrix)
+#     
+#     # add random effects
+#     unit.df$alpha <- unit.df$E.alpha.given.treat + random.effects[, 1]
+#     unit.df$beta <-  unit.df$E.beta.given.treat  + random.effects[, 2]
+#     (unit.df)[1:40,]
+#     
+#     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#     # structure of experimental design, time points
+#     
+#     #x.grid = seq(0, 8, by = 8/J)[0:8]
+#     
+#     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#     # set up unbalanced visits everyone at first visit but randomly end up to max after that
+#     
+#     p <- round(runif(N,2,J))            # last visit for each person
+#     
+#     M= sum(p)
+#     
+#     unit <- sort(rep(c(1:N), times=p))  # id for each person
+#     
+#     j <- as.vector(unlist(tapply(X=unit, INDEX=list( unit), FUN=seq_along))) # count with each person
+#     
+#     time <- j-1  # first visit , baseline becomes 0
+#     
+#     within.unit.df <- data.frame(cbind(unit, j, time))  # create a data frame
+#     
+#     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~end unbalanced
+#     # merge design and dataand create response
+#     
+#     flat.df = merge(unit.df, within.unit.df)
+#     
+#     flat.df <-  within(flat.df, y <-  alpha + time * beta + error * rnorm(n = M))
+#     
+#     flat.df$treat <- as.factor(flat.df$treat)
+#     flat.df$treat <- ifelse(flat.df$treat %in% 1, "Active","Placebo" )
+#     flat.df[1:60,]
+#     
+#     
+#     dat <- flat.df
+#     names(dat )[names(dat) == "y"]<-c("value")
+#     names(dat )[names(dat) == "j"]<-c("VISIT")
+#     names(dat )[names(dat) == "unit"]<-c("ID")
+#     
+#     
+#     dat <- dat[, c("value","VISIT","ID")]
+#     dat <- groupedData( (value) ~ VISIT | ID, data=dat)
+#     dat$variable <- "BIOCHEM.B"
+#     
+#     pd <- position_dodge(.4)
+#     
+#     dat$value <-  exp(dat$value)
+#     
+#     plot1 <-  ggplot(dat,   aes (x = VISIT, y =    (value), group = ID, color = ID)) +
+#         geom_line() + geom_point() + ylab("response") + xlab("visit") +
+#        stat_summary(fun=mean,geom="line", colour="black",lwd=1,aes(group=variable ) ) +
+#         # geom_smooth(method=lm, se=FALSE, fullrange=TRUE )+
+#         # scale_shape_manual(values=c(3, 16))+ 
+#         #scale_color_manual(values=c('#999999','#E69F00'))+
+#         theme(legend.position="top") +
+#         #xlim(0, J) +
+#         scale_x_continuous(breaks=c(0:J)) +
+#         theme(panel.background=element_blank(),
+#               # axis.text.y=element_blank(),
+#               # axis.ticks.y=element_blank(),
+#               # https://stackoverflow.com/questions/46482846/ggplot2-x-axis-extreme-right-tick-label-clipped-after-insetting-legend
+#               # stop axis being clipped
+#               plot.title=element_text(), plot.margin = unit(c(5.5,12,5.5,5.5), "pt"),
+#               legend.text=element_text(size=12),
+#               legend.title=element_text(size=14),
+#               legend.position="none",
+#               axis.text.x  = element_text(size=10),
+#               axis.text.y  = element_text(size=10),
+#               axis.line.x = element_line(color="black"),
+#               axis.line.y = element_line(color="black"),
+#               plot.caption=element_text(hjust = 0, size = 7))
+#     
+#     plot1
+#     
+#     return(list(d=dat))
+#     
+# }) 
+
+    
+    
+    
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
     
     
     
     
-    
+    # --------------------------------------------------------------------------
     # --------------------------------------------------------------------------
     # Fit the specified regression model
     fit.regression <- reactive({
