@@ -1205,6 +1205,7 @@ server <- shinyServer(function(input, output   ) {
                       # axis.ticks.y=element_blank(),
                       # https://stackoverflow.com/questions/46482846/ggplot2-x-axis-extreme-right-tick-label-clipped-after-insetting-legend
                       # stop axis being clipped
+                      plot.background=element_rect(fill = input$Design),    
                       plot.title=element_text(), plot.margin = unit(c(5.5,12,5.5,5.5), "pt"),
                       legend.text=element_text(size=12),
                       legend.title=element_text(size=14),
@@ -1287,6 +1288,7 @@ server <- shinyServer(function(input, output   ) {
                       # axis.ticks.y=element_blank(),
                       # https://stackoverflow.com/questions/46482846/ggplot2-x-axis-extreme-right-tick-label-clipped-after-insetting-legend
                       # stop axis being clipped
+                      plot.background=element_rect(fill = input$Design),    
                       plot.title=element_text(), plot.margin = unit(c(5.5,12,5.5,5.5), "pt"),
                       legend.text=element_text(size=12),
                       legend.title=element_text(size=14),
@@ -1358,6 +1360,7 @@ server <- shinyServer(function(input, output   ) {
                       # axis.ticks.y=element_blank(),
                       # https://stackoverflow.com/questions/46482846/ggplot2-x-axis-extreme-right-tick-label-clipped-after-insetting-legend
                       # stop axis being clipped
+                      plot.background=element_rect(fill = input$Design),    
                       plot.title=element_text(), plot.margin = unit(c(5.5,12,5.5,5.5), "pt"),
                       legend.text=element_text(size=12),
                       legend.title=element_text(size=14),
@@ -1422,6 +1425,7 @@ server <- shinyServer(function(input, output   ) {
                       # axis.ticks.y=element_blank(),
                       # https://stackoverflow.com/questions/46482846/ggplot2-x-axis-extreme-right-tick-label-clipped-after-insetting-legend
                       # stop axis being clipped
+                      plot.background=element_rect(fill = input$Design),    
                       plot.title=element_text(), plot.margin = unit(c(5.5,12,5.5,5.5), "pt"),
                       legend.text=element_text(size=12),
                       legend.title=element_text(size=14),
@@ -1534,6 +1538,7 @@ server <- shinyServer(function(input, output   ) {
                       # axis.ticks.y=element_blank(),
                       # https://stackoverflow.com/questions/46482846/ggplot2-x-axis-extreme-right-tick-label-clipped-after-insetting-legend
                       # stop axis being clipped
+                      plot.background=element_rect(fill = input$Design),    
                       plot.title=element_text(), plot.margin = unit(c(5.5,12,5.5,5.5), "pt"),
                       legend.text=element_text(size=12),
                       legend.title=element_text(size=14),
