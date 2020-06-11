@@ -25,8 +25,9 @@ p2 <- function(x) {formatC(x, format="f", digits=2)}
 options(width=100)
 
 # ggplot line settings
-sizeG=.5; alphaG=0.9
+sizeG=.5; alphaG=0.9; directionG =-1; h.startG=90
  
+
 # function to create longitudinal data
 is.even <- function(x){ x %% 2 == 0 }
 
@@ -50,7 +51,7 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                       trend using simple summary statistics, log transform the data and calculate summary statistics followed by 
                       exponentiating back, we also fit a generalized least squares (GLS) model to the log transformed data
                       (using an autocorrelation structure of order 1 as we simulate AR(1)) to account for the fact patients are 
-                      followed over time, finally back transforming the model estimates. We also fit a linear mixed model to the data.
+                      followed over time, finally back transforming the model estimates. We also fit a linear mixed model (LMM) to the data.
                      It cannot be emphasized enough, always plot the data.")),
                 
                 h4(p("The natural log transformation is used throughout. The first plot selection '1 Means calculated on untransformed data',
@@ -200,7 +201,7 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
      
                    ")), 
                                   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~end of section to add colour     
-                                  tabPanel("Plotting longitudinal data and estimating averages with the help of a natural log transformation", 
+                                  tabPanel("Plotting longitudinal data & estimating averages with the help of a natural log transformation", 
                                            
                                            #h4(strong("Plot the data. Always plot the data.")),
                                            plotOutput("reg.plot"),
@@ -210,7 +211,7 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                            h4(strong("Table 1 Summary statistics, untransformed data")),
                                            
                                            
-                                           div(class="span7", verbatimTextOutput("reg.summary3"),
+                                           div(class="span7", verbatimTextOutput("reg.summary3")),
                                                h4(strong("Table 2 Log transformation, calculate summary statistics then back transform (exponentiate)")),
                                                
                                                
@@ -219,9 +220,9 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                                
                                                div(class="span7", verbatimTextOutput("reg.summary6")),
                                                h4(strong("Table 4 LMM model fit to natural logged data, the LMM model estimates and 95% CI are then exponentiated")),
-                                           ) ),
+                                           ),
                                            #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                                           tabPanel("Linear mixed models fitted to simulated data", value=3, 
+                                           tabPanel("LMMs fitted to simulated data", value=3, 
                                                     
                                                     div(class="span7", verbatimTextOutput("reg.summary8")),
                                                     h4(paste("Table 5. LMM on simulated data, numeric time variable.")), 
@@ -230,8 +231,26 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                                     div(class="span7", verbatimTextOutput("reg.summary9")),
                                                     h4(paste("Table 7. LMM on exponentiated simulated data. 
                                                              The estimates should be similar to those in selection '1 Means calculated on untransformed data', and Table 1")), 
-                                           ) 
+                                           ) ,
                                            #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                                  tabPanel("Plotting longitudinal data, playing with the plots",  
+                                           plotOutput("reg.plot2"),
+                                           h4(strong("Figure 1. Refer to the plot selection option for a description of the presentation")),
+                                           
+                                           div(class="span7", verbatimTextOutput("reg.summary5a")),
+                                           h4(strong("Table 1 Summary statistics, untransformed data")),
+                                           
+                                           div(class="span7", verbatimTextOutput("reg.summary3a")),
+                                          h4(strong("Table 2 Log transformation, calculate summary statistics then back transform (exponentiate)")),
+                                               
+                                          div(class="span7", verbatimTextOutput("reg.summary4a")),
+                                          h4(strong("Table 3 GLS model fit to natural logged data, the GLS model estimates and 95% CI are then exponentiated")),
+                                          
+                                          div(class="span7", verbatimTextOutput("reg.summary6a")),
+                                          h4(strong("Table 4 LMM model fit to natural logged data, the LMM model estimates and 95% CI are then exponentiated")),
+                                           
+                                           
+                                   ) 
                                            #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                   
                                   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -777,7 +796,7 @@ server <- shinyServer(function(input, output   ) {
     #---------------------------------------------------------------------------
     # Plot the data  
     
-    output$reg.plot <- renderPlot({         
+    output$reg.plot2 <- output$reg.plot <- renderPlot({         
         
         require(ggplot2)
         
@@ -842,7 +861,7 @@ server <- shinyServer(function(input, output   ) {
                     panel.grid.major = element_blank(),
                     panel.grid.minor = element_blank(),
                     # Change plot and panel background
-                    plot.background=element_rect(fill = "white"),
+                    plot.background=element_rect(fill = "white"),                ##change background colour here
                     panel.background = element_rect(fill = 'black'),
                     # Change legend
                     legend.position = c(0.6, 0.07),
@@ -886,7 +905,7 @@ server <- shinyServer(function(input, output   ) {
                       axis.line.x = element_line(color="black"),
                       axis.line.y = element_line(color="black"),
                       plot.caption=element_text(hjust = 0, size = 7)) +
-                            scale_color_hue(direction = -1, h.start=90)
+                           scale_color_hue(direction = directionG, h.start=h.startG)
             
             
             
@@ -941,7 +960,7 @@ server <- shinyServer(function(input, output   ) {
                 
                 scale_y_continuous(
                     breaks= 
-                        log(c(0.01, .1,  1 , 10 ,100) )  ,  # this is where the values go
+                        log(c(0.01,      0.1,      1 ,      10 ,      100) )  ,  # this is where the values go
                     labels= c(0.01,      0.1 ,     1,       10 ,      100)) +      
                 
                 scale_x_continuous(breaks = c(unique(df_summary1$VISIT)),
@@ -949,7 +968,7 @@ server <- shinyServer(function(input, output   ) {
                                        c(unique(df_summary1$VISIT))
                 ) +
                 
-                scale_color_hue(direction = -1, h.start=90) +
+               scale_color_hue(direction = directionG, h.start=h.startG) +
                 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 # create visit counts log the y position 
                 
@@ -1022,8 +1041,6 @@ server <- shinyServer(function(input, output   ) {
                               width=0.05, lwd = 0.05) +
                 scale_y_continuous(expand = c(.1,0) ) +
                 
-                
-                
                 scale_x_continuous(breaks = c(unique(df$VISIT)),
                                    labels = 
                                        c(unique(df$VISIT))
@@ -1052,7 +1069,7 @@ server <- shinyServer(function(input, output   ) {
                 ) +
                 
                 
-                scale_color_hue(direction = -1, h.start=90) +
+               scale_color_hue(direction = directionG, h.start=h.startG) +
                 
                 EnvStats::stat_n_text(size = 4, y.pos = max(df_summary1$value, na.rm=T)*1.1 , y.expand.factor=0, 
                                       angle = 0, hjust = .5, family = "mono", fontface = "plain") + #295 bold
@@ -1136,14 +1153,14 @@ server <- shinyServer(function(input, output   ) {
                 
                 scale_y_continuous(
                     breaks= 
-                        log(c(0.01, .1,  1 , 10 ,100) )  ,  # this is where the values go
-                    labels= c(0.01,      0.1 ,     1,       10 ,      100)) +      
+                        log(c(0.01,      0.1,      1 ,      10 ,      100) )  ,  # this is where the values go
+                    labels= c(0.01,      0.1 ,     1,       10 ,      100)) +     
                 
                 scale_x_continuous(breaks = c(unique(df_summary1$VISIT)),
                                    labels = 
                                        c(unique(df_summary1$VISIT))
                 ) +
-                scale_color_hue(direction = -1, h.start=90) +
+               scale_color_hue(direction = directionG, h.start=h.startG) +
                 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 # create visit counts log the y position 
                 
@@ -1228,7 +1245,7 @@ server <- shinyServer(function(input, output   ) {
             #       axis.line = element_line(colour = "black", size=0.05),
             #       panel.border = element_rect(colour = "black", fill=NA, size=0.05)
             # ) +
-            scale_color_hue(direction = -1, h.start=90) +
+           scale_color_hue(direction = directionG, h.start=h.startG) +
             EnvStats::stat_n_text(size = 4, y.pos = max(df_summary1$lvalue, na.rm=T)*1.1 , y.expand.factor=0, 
                                   angle = 0, hjust = .5, family = "mono", fontface = "plain") +#295 bold
                 
@@ -1298,7 +1315,7 @@ server <- shinyServer(function(input, output   ) {
                 scale_x_continuous(breaks = c(unique(df$VISIT)),
                                    c(unique(df$VISIT))) +   # labels = comma) + #
                 
-                scale_color_hue(direction = -1, h.start=90) +
+               scale_color_hue(direction = directionG, h.start=h.startG) +
                 EnvStats::stat_n_text(size = 4, y.pos = max(log(dplot$value), na.rm=T)*1.1 ,
                                       y.expand.factor=0,  angle = 0, hjust = .5, family = "mono", fontface = "plain") +#295 bold
                 
@@ -1361,7 +1378,7 @@ server <- shinyServer(function(input, output   ) {
                 scale_x_continuous(breaks = c(unique(df$VISIT)),
                                    c(unique(df$VISIT))) +   # labels = comma) + #
                 
-                scale_color_hue(direction = -1, h.start=90) +
+               scale_color_hue(direction = directionG, h.start=h.startG) +
             
                 EnvStats::stat_n_text(size = 4, y.pos = max(log(dplot$value), na.rm=T)*1.1 ,
                                       y.expand.factor=0,  angle = 0, hjust = .5, family = "mono", fontface = "plain") +#295 bold
@@ -1560,15 +1577,15 @@ server <- shinyServer(function(input, output   ) {
     # Show the summaries
     
     
-    output$reg.summary3 <- renderPrint({
+       output$reg.summary3 <- renderPrint({
         
         summary <- data.summ2()$summ
         
-        #  return(list(summary))
+      #  return(list(summary))
         
     })
     
-    output$reg.summary4 <- renderPrint({
+      output$reg.summary4 <- renderPrint({
         
         summary <- fit.regression()$fit.res1
         
@@ -1579,11 +1596,11 @@ server <- shinyServer(function(input, output   ) {
     })     
     
     
-    output$reg.summary5 <- renderPrint({
+       output$reg.summary5 <- renderPrint({
         
         summary <- data.summ()$summ
         
-        #  return(list(summary))
+     #  return(list(summary))
         
     })
     
@@ -1598,6 +1615,61 @@ server <- shinyServer(function(input, output   ) {
         # return(list(summary))
         
     })     
+    
+    
+    #repeats
+    output$reg.summary3a   <- renderPrint({
+
+      summary <- data.summ2()$summ
+
+       #return(list(summary))
+      print(kable(summary, format="pandoc", row.names = FALSE, digits = c(3)))
+
+    })
+
+    output$reg.summary4a  <- renderPrint({
+
+      summary <- fit.regression()$fit.res1
+
+      print(kable(summary, format="pandoc", row.names = FALSE, digits = c(3)))
+
+      #return(list(summary))
+
+    })
+
+# 
+    output$reg.summary5a   <- renderPrint({
+
+      summary <- data.summ()$summ
+
+   #  return(list(summary))
+      print(kable(summary, format="pandoc", row.names = FALSE, digits = c(3)))
+      
+
+    })
+
+    output$reg.summary6a  <- renderPrint({
+
+      summary <- fit.regression2()$fit.res2a
+
+      summary$se <- NULL
+
+      print(kable(summary, format="pandoc", row.names = FALSE, digits = c(3)))
+
+      # return(list(summary))
+
+     })     
+    # 
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     output$reg.summary8 <- renderPrint({
         
         summary <- check()$f
