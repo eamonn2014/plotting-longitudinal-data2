@@ -24,9 +24,7 @@ p1 <- function(x) {formatC(x, format="f", digits=1)}
 p2 <- function(x) {formatC(x, format="f", digits=2)}
 options(width=100)
 
-# ggplot line settings
-sizeG=.5; alphaG=0.9; directionG =-1; v4=90
- 
+v4=90
 plot.backgroundG <- colors()
 
 # function to create longitudinal data
@@ -81,7 +79,8 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                 h4(p("
                 Note the inputs simulate the data for the analyses and the final simulated response is exponentiated. 
                      The second tab is for interest, we run linear mixed models on the simulated response  
-                     and on the exponentiated simulated response.")),
+                     and on the exponentiated simulated response. The third tab is just for fun, the first tab is repeated 
+                     however here you can play around with inputs to adjust the plots.")),
                 
                 shinyUI(pageWithSidebar(
                     headerPanel(" "),
@@ -243,9 +242,9 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                              #             choices=c(  plot.backgroundG ), width='100%',
                                              #             selected = "white"),
                                              
-                                             textInput("v1", div(h5(tags$span(style="color:blue", "Line size: 0.1 -> "))), value= "1"),
-                                             textInput("v2", div(h5(tags$span(style="color:blue", "Line boldness: 0-1"))), value= ".9"),
-                                             textInput("v3", div(h5(tags$span(style="color:blue", "Colour reverse: 1,-1"))), value= "-1")
+                                             textInput("v1", div(h5(tags$span(style="color:blue", "Line size: 0.1 -> "))), value= ".2"),
+                                             textInput("v2", div(h5(tags$span(style="color:blue", "Line boldness: 0-1"))), value= ".4"),
+                                             textInput("v3", div(h5(tags$span(style="color:blue", "Colour reverse: 1,-1"))), value= "1")
                                               
                                              # selectInput("Design",
                                              #             div(h5(tags$span(style="color:blue", "Select background colour:"))),
