@@ -243,7 +243,7 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                              #             selected = "white"),
                                              
                                              textInput("v1", div(h5(tags$span(style="color:blue", "Line size: 0.1 -> "))), value= ".2"),
-                                             textInput("v2", div(h5(tags$span(style="color:blue", "Line boldness: 0-1"))), value= ".4"),
+                                             textInput("v2", div(h5(tags$span(style="color:blue", "Line boldness: 0-1"))), value= ".8"),
                                              textInput("v3", div(h5(tags$span(style="color:blue", "Colour reverse: 1,-1"))), value= "1")
                                               
                                              # selectInput("Design",
