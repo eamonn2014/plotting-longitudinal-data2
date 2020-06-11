@@ -25,8 +25,9 @@ p2 <- function(x) {formatC(x, format="f", digits=2)}
 options(width=100)
 
 # ggplot line settings
-sizeG=.5; alphaG=0.9; directionG =-1; h.startG=90
+sizeG=.5; alphaG=0.9; directionG =-1; v4=90
  
+plot.backgroundG <- colors()
 
 # function to create longitudinal data
 is.even <- function(x){ x %% 2 == 0 }
@@ -234,6 +235,31 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                            ) ,
                                            #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                   tabPanel("Plotting longitudinal data, playing with the plots",  
+                                           
+                                           splitLayout(
+                                             
+                                             # selectInput("Design",
+                                             #             div(h5(tags$span(style="color:blue", "Select background colour:"))),
+                                             #             choices=c(  plot.backgroundG ), width='100%',
+                                             #             selected = "white"),
+                                             
+                                             textInput("v1", div(h5(tags$span(style="color:blue", "Line size: 0.1 -> "))), value= "1"),
+                                             textInput("v2", div(h5(tags$span(style="color:blue", "Line boldness: 0-1"))), value= ".9"),
+                                             textInput("v3", div(h5(tags$span(style="color:blue", "Colour reverse: 1,-1"))), value= "-1")
+                                              
+                                             # selectInput("Design",
+                                             #             div(h5(tags$span(style="color:blue", "Select background colour:"))),
+                                             #             choices=c(  plot.backgroundG ), width='22%',
+                                             #             selected = "white")
+                                             
+                                           ),
+                                           
+                                           selectInput("Design",
+                                                       div(h5(tags$span(style="color:blue", "Select background colour:"))),
+                                                       choices=c(  plot.backgroundG ), width='22%',
+                                                       selected = "white"),
+
+                                           
                                            plotOutput("reg.plot2"),
                                            h4(strong("Figure 1. Refer to the plot selection option for a description of the presentation")),
                                            
@@ -267,7 +293,7 @@ server <- shinyServer(function(input, output   ) {
     #__________________________________________________________________________
     
     
-    shinyalert("Welcome! \nLet's simulate skewed longitudinal data and estimate averages",
+    shinyalert("Welcome! \nLet's simulate longitudinal data and estimate averages",
                #"Hey Little Richard!", 
                type = "info")
     
@@ -292,7 +318,7 @@ server <- shinyServer(function(input, output   ) {
         tau1 <-   input$s
         tau01 <-  input$r
         m <-      input$J
-        
+    
         
         
         return(list( n=n,  beta0=beta0, beta1=beta1, sigma=sigma, 
@@ -800,6 +826,13 @@ server <- shinyServer(function(input, output   ) {
         
         require(ggplot2)
         
+      v1 <- as.numeric(    eval(parse(text= (input$v1)) ) )
+      v2 <- as.numeric(    eval(parse(text= (input$v2)) ) )
+      v3 <- as.numeric(    eval(parse(text= (input$v3)) ) )
+    #  v4 <- as.numeric(    eval(parse(text= (input$v4)) ) )
+      
+    
+      
         # Get the current regression data
         data <- make.data()
         df <- data$d
@@ -833,7 +866,7 @@ server <- shinyServer(function(input, output   ) {
             
             
             pr1 <- ggplot((df_summary1), aes(x = VISIT, y =value, color = ID)) +
-                geom_line( size=sizeG, alpha=alphaG) +
+                geom_line( size=v1, alpha=v2) +
                 #scale_color_gradient(low = "blue", high = "red")+
                 #scale_color_brewer(palette = "Dark2") +
                 stat_summary(geom="line",  fun=mean, colour="black", lwd=0.5) +  # , linetype="dashed"
@@ -861,7 +894,7 @@ server <- shinyServer(function(input, output   ) {
                     panel.grid.major = element_blank(),
                     panel.grid.minor = element_blank(),
                     # Change plot and panel background
-                    plot.background=element_rect(fill = "white"),                ##change background colour here
+                    plot.background=element_rect(fill = input$Design),                ##change background colour here
                     panel.background = element_rect(fill = 'black'),
                     # Change legend
                     legend.position = c(0.6, 0.07),
@@ -905,7 +938,7 @@ server <- shinyServer(function(input, output   ) {
                       axis.line.x = element_line(color="black"),
                       axis.line.y = element_line(color="black"),
                       plot.caption=element_text(hjust = 0, size = 7)) +
-                           scale_color_hue(direction = directionG, h.start=h.startG)
+                           scale_color_hue(direction = v3, h.start=v4)
             
             
             
@@ -949,7 +982,7 @@ server <- shinyServer(function(input, output   ) {
             # plot the raw data
             
             pr1 <- ggplot((df_summary1), aes(x = VISIT, y =lvalue, color = ID)) +
-                geom_line(size=sizeG, alpha=alphaG) +
+                geom_line(size=v1, alpha=v2) +
                 geom_point( data=df_summary1, aes(x=VISIT , y=mean_PL), colour="red")           +
                 geom_line( data=df_summary1, aes(x=VISIT , y=mean_PL), colour="red") +
                 geom_errorbar(data=df_summary1, 
@@ -968,7 +1001,7 @@ server <- shinyServer(function(input, output   ) {
                                        c(unique(df_summary1$VISIT))
                 ) +
                 
-               scale_color_hue(direction = directionG, h.start=h.startG) +
+               scale_color_hue(direction = v3, h.start=v4) +
                 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 # create visit counts log the y position 
                 
@@ -981,6 +1014,7 @@ server <- shinyServer(function(input, output   ) {
                       # https://stackoverflow.com/questions/46482846/ggplot2-x-axis-extreme-right-tick-label-clipped-after-insetting-legend
                       # stop axis being clipped
                       plot.title=element_text(), plot.margin = unit(c(5.5,12,5.5,5.5), "pt"),
+                      plot.background=element_rect(fill = input$Design),   
                       legend.text=element_text(size=12),
                       legend.title=element_text(size=14),
                       legend.position="none",
@@ -1031,7 +1065,7 @@ server <- shinyServer(function(input, output   ) {
             df_summary1$H2SE <- df_summary1$medianU
             
             pr1 <- ggplot((df_summary1), aes(x = VISIT, y =value, color = ID)) +
-                geom_line( size=sizeG, alpha=alphaG) +
+                geom_line( size=v1, alpha=v2) +
                 #scale_color_gradient(low = "blue", high = "red")+
                 #scale_color_brewer(palette = "Dark2") +
                 stat_summary(geom="line",  fun=median, colour="black", lwd=0.5) +  # , linetype="dashed"
@@ -1057,7 +1091,7 @@ server <- shinyServer(function(input, output   ) {
                     panel.grid.major = element_blank(),
                     panel.grid.minor = element_blank(),
                     # Change plot and panel background
-                    plot.background=element_rect(fill = "white"),
+                    plot.background=element_rect(fill =  input$Design),
                     panel.background = element_rect(fill = 'black'),
                     # Change legend
                     legend.position = c(0.6, 0.07),
@@ -1069,7 +1103,7 @@ server <- shinyServer(function(input, output   ) {
                 ) +
                 
                 
-               scale_color_hue(direction = directionG, h.start=h.startG) +
+               scale_color_hue(direction = v3, h.start=v4) +
                 
                 EnvStats::stat_n_text(size = 4, y.pos = max(df_summary1$value, na.rm=T)*1.1 , y.expand.factor=0, 
                                       angle = 0, hjust = .5, family = "mono", fontface = "plain") + #295 bold
@@ -1142,7 +1176,7 @@ server <- shinyServer(function(input, output   ) {
             # plot the raw data
             
             pr1 <- ggplot((df_summary1), aes(x = VISIT, y =lvalue, color = ID)) +
-                geom_line( size=sizeG, alpha=alphaG) +
+                geom_line( size=v1, alpha=v2) +
                 geom_point( data=df_summary1, aes(x=VISIT , y=mean_PL), colour="red")           +
                 geom_line( data=df_summary1, aes(x=VISIT , y=mean_PL), colour="red") +
                 geom_errorbar(data=df_summary1, 
@@ -1160,7 +1194,7 @@ server <- shinyServer(function(input, output   ) {
                                    labels = 
                                        c(unique(df_summary1$VISIT))
                 ) +
-               scale_color_hue(direction = directionG, h.start=h.startG) +
+               scale_color_hue(direction = v3, h.start=v4) +
                 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 # create visit counts log the y position 
                 
@@ -1216,7 +1250,7 @@ server <- shinyServer(function(input, output   ) {
             
             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
             pr1 <- ggplot((df_summary1), aes(x = VISIT, y =lvalue, color = ID)) +
-                geom_line( size=sizeG, alpha=alphaG) +
+                geom_line( size=v1, alpha=v2) +
                 stat_summary(geom="line",  fun=mean, colour="black", lwd=0.5) +  
                 stat_summary(geom="point", fun=mean, colour="black") +
                 geom_errorbar(data=(df_summary1), 
@@ -1230,7 +1264,7 @@ server <- shinyServer(function(input, output   ) {
                 scale_y_continuous(
                     breaks= 
                         c(    log(0.01), log(.1),  log(1) , log(10) , log(100) ) ,  # this is where the values go
-                    labels= c(0.01,      0.1 ,     1,       10 ,      100)) +      
+                        labels= c(0.01,      0.1 ,     1,       10 ,      100)) +      
                 
                 # theme(axis.text.y   = element_text(size=10),
                 #       axis.text.x   = element_text(size=10),
@@ -1245,7 +1279,7 @@ server <- shinyServer(function(input, output   ) {
             #       axis.line = element_line(colour = "black", size=0.05),
             #       panel.border = element_rect(colour = "black", fill=NA, size=0.05)
             # ) +
-           scale_color_hue(direction = directionG, h.start=h.startG) +
+           scale_color_hue(direction = v3, h.start=v4) +
             EnvStats::stat_n_text(size = 4, y.pos = max(df_summary1$lvalue, na.rm=T)*1.1 , y.expand.factor=0, 
                                   angle = 0, hjust = .5, family = "mono", fontface = "plain") +#295 bold
                 
@@ -1298,7 +1332,7 @@ server <- shinyServer(function(input, output   ) {
             p <- ggplot(data = dplot, aes(x=Visit , y=Estimate, group=1)) 
                 
             
-            p1 <-  p +geom_line(data=df, aes(x = x, y = y, color = g, group=g), size=sizeG, alpha=alphaG)  +
+            p1 <-  p +geom_line(data=df, aes(x = x, y = y, color = g, group=g), size=v1, alpha=v2)  +
                 theme(text = element_text(size=10),
                       axis.text.x = element_text(angle = 0, vjust = 1, hjust=.5)) +
                 geom_point() + geom_line() +   guides(color=FALSE) +
@@ -1315,7 +1349,7 @@ server <- shinyServer(function(input, output   ) {
                 scale_x_continuous(breaks = c(unique(df$VISIT)),
                                    c(unique(df$VISIT))) +   # labels = comma) + #
                 
-               scale_color_hue(direction = directionG, h.start=h.startG) +
+               scale_color_hue(direction = v3, h.start=v4) +
                 EnvStats::stat_n_text(size = 4, y.pos = max(log(dplot$value), na.rm=T)*1.1 ,
                                       y.expand.factor=0,  angle = 0, hjust = .5, family = "mono", fontface = "plain") +#295 bold
                 
@@ -1360,7 +1394,7 @@ server <- shinyServer(function(input, output   ) {
             
             
             p <- ggplot(data = dplot, aes(x=Visit , y=Estimate, group=1)) +
-                geom_line(data=df, aes(x = x, y = y, color = g, group=g), size=sizeG, alpha=alphaG)  +
+                geom_line(data=df, aes(x = x, y = y, color = g, group=g), size=v1, alpha=v2)  +
                 geom_point() + geom_line() +   guides(color=FALSE) +
                 geom_errorbar(aes(ymin=Lower, ymax=Upper ), color="black", width=.05, lwd=.2) 
             
@@ -1378,7 +1412,7 @@ server <- shinyServer(function(input, output   ) {
                 scale_x_continuous(breaks = c(unique(df$VISIT)),
                                    c(unique(df$VISIT))) +   # labels = comma) + #
                 
-               scale_color_hue(direction = directionG, h.start=h.startG) +
+               scale_color_hue(direction = v3, h.start=v4) +
             
                 EnvStats::stat_n_text(size = 4, y.pos = max(log(dplot$value), na.rm=T)*1.1 ,
                                       y.expand.factor=0,  angle = 0, hjust = .5, family = "mono", fontface = "plain") +#295 bold
@@ -1576,10 +1610,18 @@ server <- shinyServer(function(input, output   ) {
     #---------------------------------------------------------------------------
     # Show the summaries
     
+    output$reg.summary5 <- renderPrint({
+      
+      summary <- data.summ()$summ
+      
+      #  return(list(summary))
+      
+    })
     
        output$reg.summary3 <- renderPrint({
         
         summary <- data.summ2()$summ
+        
         
       #  return(list(summary))
         
@@ -1596,14 +1638,7 @@ server <- shinyServer(function(input, output   ) {
     })     
     
     
-       output$reg.summary5 <- renderPrint({
-        
-        summary <- data.summ()$summ
-        
-     #  return(list(summary))
-        
-    })
-    
+     
     output$reg.summary6 <- renderPrint({
         
         summary <- fit.regression2()$fit.res2a
@@ -1616,8 +1651,21 @@ server <- shinyServer(function(input, output   ) {
         
     })     
     
+    ###################################################################
+    #repeats############################################################
+    ###################################################################
     
-    #repeats
+    output$reg.summary5a   <- renderPrint({
+
+      summary <- data.summ()$summ
+
+      #  return(list(summary))
+      print(kable(summary, format="pandoc", row.names = FALSE, digits = c(3)))
+
+
+    })
+    
+    
     output$reg.summary3a   <- renderPrint({
 
       summary <- data.summ2()$summ
@@ -1638,16 +1686,7 @@ server <- shinyServer(function(input, output   ) {
     })
 
 # 
-    output$reg.summary5a   <- renderPrint({
-
-      summary <- data.summ()$summ
-
-   #  return(list(summary))
-      print(kable(summary, format="pandoc", row.names = FALSE, digits = c(3)))
-      
-
-    })
-
+ 
     output$reg.summary6a  <- renderPrint({
 
       summary <- fit.regression2()$fit.res2a
@@ -1659,7 +1698,9 @@ server <- shinyServer(function(input, output   ) {
       # return(list(summary))
 
      })     
-    # 
+    ###################################################################
+    #repeats############################################################
+    ###################################################################
     
     
     
