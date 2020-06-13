@@ -53,7 +53,7 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                       followed over time, finally back transforming the model estimates. We also fit a linear mixed model (LMM) to the data.
                      It cannot be emphasized enough, always plot the data.")),
                 
-                h4(p("The natural log transformation is used throughout. The first plot selection '1 Means calculated on untransformed data',
+                h4(p("The natural log transformation is used throughout. By anti-logging predictions from a model assuming a normal distribution on the logged values this will result in estimates of the median response. The first plot selection '1 Means calculated on untransformed data',
                 is a plot of the raw data presenting at each timepoint arithmetic means and 95%CIs. We can see heavily skewed data and that this plot is not very illuminating. 
                  The next plot '1a Means calculated on untransformed data, antilog presentation' presents the same arithmetic mean and 95%CIs 
                  as the previous plot. But here the data are 
