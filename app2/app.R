@@ -50,8 +50,8 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                       trend using simple summary statistics, log transform the data and calculate summary statistics followed by 
                       exponentiating back, we also fit a generalized least squares (GLS) model to the log transformed data
                       (using an autocorrelation structure of order 1 as we simulate AR(1)) to account for the fact patients are 
-                      followed over time, finally back transforming the model estimates. We also fit a linear mixed model (LMM) to the data.
-                     It cannot be emphasized enough, always plot the data.")),
+                      followed over time, finally back transforming the model estimates. We also fit a linear mixed model (LMM) to the data. Note summary statistics approaches ignore the 
+                      longitudinal nature of the data. It cannot be emphasized enough, always plot the data.")),
             
                 h4(p("The natural log transformation is used throughout. By anti-logging predictions from a model assuming a normal distribution on the logged values this will result in estimates of the median response. The first plot selection '1 Means calculated on untransformed data',
 
@@ -173,13 +173,11 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                       
                                       #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                       
-                                      # div(p( strong("References:"))),  
+                                      div(p( strong("References:"))),  
                                       # 
-                                      # tags$a(href = "https://github.com/eamonn2014/Longitudinal-RCT-treatment-effect-estimation-simulation/blob/master/recommendations-for-the-primary-analysis-of-continuous-endpoints4590.pdf", "[1] MMRM"),
-                                      # div(p(" ")),
-                                      # tags$a(href = "https://twitter.com/f2harrell/status/1220700181496320001", "[4] Purpose of RCT"),
-                                      # div(p(" ")),
-                                      
+                                      tags$a(href = "https://hbiostat.org/bbr/md/serial.html#fn4", "[1] Serial Data Frank Harrell"),
+                                      div(p(" ")),
+ 
                                   )
                                   
                     ),
