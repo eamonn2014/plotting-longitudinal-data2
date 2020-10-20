@@ -971,10 +971,14 @@ summary(tryCatch(gls(y ~ x  +0 ,
 # remember the intercept is when baseline is zero # so subtract the median baseline so the read out
 # is the value of the response when the baseline is at median baseline 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  
+  cp <- list(corSymm, corAR1, corCAR1, corExp, corLin, corGaus,corSpher) 
+  k=1
+  
 # original baseline adjusted model on logged original data
 fit.res <-  
   tryCatch(gls(y ~ x  + baseline ,
-               correlation=corSymm(form=~ as.numeric(x)|g), 
+               correlation=cp[[k]](form=~ as.numeric(x)|g), 
                weights=varIdent(form=~1|x),
                mdata, na.action=na.omit) , 
            error=function(e) e)
@@ -993,7 +997,7 @@ mdata$x <- relevel(mdata$x, ref= "2")   ##new
 
 fit.res <-  
   tryCatch(gls(y ~ x  + base ,
-               correlation=corSymm(form=~ as.numeric(x)|g), 
+               correlation=cp[[k]](form=~ as.numeric(x)|g), 
                weights=varIdent(form=~1|x),
                mdata, na.action=na.omit) , 
            error=function(e) e)
@@ -1008,7 +1012,7 @@ mdata$x <- relevel(mdata$x, ref= "3")   ##new
 
 fit.res <-  
   tryCatch(gls(y ~ x  + base ,
-               correlation=corSymm(form=~ as.numeric(x)|g), 
+               correlation=cp[[k]](form=~ as.numeric(x)|g), 
                weights=varIdent(form=~1|x),
                mdata, na.action=na.omit) , 
            error=function(e) e)
@@ -1023,7 +1027,7 @@ mdata$x <- relevel(mdata$x, ref= "5")
 
 fit.res <-  
   tryCatch(gls(y ~ x  + base ,
-               correlation=corSymm(form=~ as.numeric(x)|g), 
+               correlation=cp[[k]](form=~ as.numeric(x)|g), 
                weights=varIdent(form=~1|x),
               mdata, na.action=na.omit) , 
            error=function(e) e)
@@ -1037,7 +1041,7 @@ mdata$x <- relevel(mdata$x, ref= "4")
 
 fit.res <-  
   tryCatch(gls(y ~ x  + base ,
-               correlation=corSymm(form=~ as.numeric(x)|g), 
+               correlation=cp[[k]](form=~ as.numeric(x)|g), 
                weights=varIdent(form=~1|x),
                mdata, na.action=na.omit) , 
            error=function(e) e)
@@ -1051,7 +1055,7 @@ mdata$x <- relevel(mdata$x, ref= "6")
 
 fit.res <-  
   tryCatch(gls(y ~ x  + base ,
-               correlation=corSymm(form=~ as.numeric(x)|g), 
+               correlation=cp[[k]](form=~ as.numeric(x)|g), 
                weights=varIdent(form=~1|x),
                mdata, na.action=na.omit) , 
            error=function(e) e)
@@ -1072,7 +1076,7 @@ dd <- datadist(d);
 options(datadist='dd')
 
 (f  <-  tryCatch(Gls(y ~ x  + base ,
-                    correlation=corSymm(form=~ as.numeric(x)|g), 
+                    correlation=cp[[k]](form=~ as.numeric(x)|g), 
                     weights=varIdent(form=~1|x),
                     d, na.action=na.omit) , 
                 error=function(e) e))
