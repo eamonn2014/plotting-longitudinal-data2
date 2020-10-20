@@ -224,7 +224,7 @@ library(MASS)
     names(est) <- c('Visit','Estimate','se', 'Lower', 'Upper')
     
     fit.res2a=est 
-    fit.res2b=fit.res ))
+    fit.res2b=fit.res 
       
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   
