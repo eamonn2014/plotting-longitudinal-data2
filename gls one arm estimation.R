@@ -611,7 +611,7 @@
     xlab("Visit")  +
     
     scale_x_continuous(breaks = c(unique(df$VISIT)),
-                       c(unique(df$VISIT))) +   # labels = comma) + #
+                      labels= c(unique(df$VISIT))) +   # labels = comma) + #
     
     EnvStats::stat_n_text(size = 4, y.pos = max(log(dplot$value), na.rm=T)*1.1 ,
                           y.expand.factor=0,  angle = 0, hjust = .5, family = "mono", fontface = "plain") +#295 bold
