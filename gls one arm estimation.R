@@ -113,7 +113,8 @@
   
   mus <- df %>%
     group_by(x) %>%
-    summarise(mu=mean(y,na.rm=T), sd=sd(y,na.rm=T), n=length(na.omit(y)), se=sd(y,na.rm=T)/sqrt(length(na.omit(y))),
+    summarise(mu=mean(y,na.rm=T),med=median(y,na.rm=T),
+              sd=sd(y,na.rm=T), n=length(na.omit(y)), se=sd(y,na.rm=T)/sqrt(length(na.omit(y))),
               lo = mean(y,na.rm=T)-2*sd(y,na.rm=T)/sqrt(length(na.omit(y))),
               hi = mean(y,na.rm=T)+2*sd(y,na.rm=T)/sqrt(length(na.omit(y)) ))
 
@@ -123,7 +124,8 @@
   
   dfs<- df %>%
     group_by(x) %>%
-    summarise(mu=mean(y,na.rm=T), sd=sd(y,na.rm=T), n=length(na.omit(y)), se=sd(y,na.rm=T)/sqrt(length(na.omit(y))),
+    summarise(mu=mean(y,na.rm=T),med=median(y,na.rm=T), 
+              sd=sd(y,na.rm=T), n=length(na.omit(y)), se=sd(y,na.rm=T)/sqrt(length(na.omit(y))),
               lo = mean(y,na.rm=T)-2*sd(y,na.rm=T)/sqrt(length(na.omit(y))),
               hi = mean(y,na.rm=T)+2*sd(y,na.rm=T)/sqrt(length(na.omit(y)) ))
 
@@ -332,12 +334,12 @@
     # print(kable(food2, format="pandoc", row.names = FALSE, digits = c(3)))
     # return(list( summ=food2)) 
     
-    food2 <- data.frame(df_summaryx)
+    food3 <- data.frame(df_summaryx)
     
     #food2[c(4,5,6,8,9,10,11,12)] <- lapply(food2[c(4,5,6,8,9,10,11,12)], function(x) exp(x))   # exponentiated here!
     
-    names(food2) <- c("Visit","Variable","Data points","Mean", "SD","SE","Subjects", "lower95%CI", "Upper95%CI", "Med", "Min","Max", "Missing")  
-    print(kable(food2, format="pandoc", row.names = FALSE, digits = c(3)))
+    names(food3) <- c("Visit","Variable","Data points","Mean", "SD","SE","Subjects", "lower95%CI", "Upper95%CI", "Med", "Min","Max", "Missing")  
+    print(kable(food3, format="pandoc", row.names = FALSE, digits = c(3)))
 
 
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -374,11 +376,11 @@
     # print(kable(food2, format="pandoc", row.names = FALSE, digits = c(3)))
     # return(list( summ=food2)) 
     
-    food2 <- data.frame(df_summaryx)
+    food4 <- data.frame(df_summaryx)
     
-    food2[c(4,5,6,8,9,10,11,12)] <- lapply(food2[c(4,5,6,8,9,10,11,12)], function(x) exp(x))
+    food4[c(4,5,6,8,9,10,11,12)] <- lapply(food4[c(4,5,6,8,9,10,11,12)], function(x) exp(x))
     
-    names(food2) <- c("Visit","Variable","Data points","Mean", "SD","SE","Subjects", "lower95%CI", "Upper95%CI", "Med", "Min","Max", "Missing")  
+    names(food4) <- c("Visit","Variable","Data points","Mean", "SD","SE","Subjects", "lower95%CI", "Upper95%CI", "Med", "Min","Max", "Missing")  
     print(kable(food2, format="pandoc", row.names = FALSE, digits = c(3)))
 
 
@@ -638,6 +640,7 @@
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   
   df_summary 
+  food2
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #  CALL IN INITIAL GLS MODEL ON LOGED DATA AS REFERENCE
@@ -668,25 +671,26 @@
 #  CREATE LONG DATA STRAT TO ADJUST FOR BASELINE
 #  THE RESPONSE IS LOGGED IN THIS DATA
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 
  # VISIT IS REMOVED FROM THIS DATA
   df <- dat  # refresh the data
   df$value <- log(df$value)  
   w1 <-   merge(df,setNames(subset(df, VISIT==1,select=c("ID", "value")),
                             c('ID', 'baseline')), by='ID')
   
-  w <-  w1[!w1$VISIT %in% 1,]
+  w <- w1[!w1$VISIT %in% 1, ]
 
   tmp <- w
   d <- tmp
+  
   d <- droplevels(d)
+  
   d$y <- d$value
   d$x <- factor(d$VISIT)
   d$g <- d$ID
-  dd <- datadist(d); 
+ 
+  mdata  <- d
+  dd <- datadist(mdata)
   options(datadist='dd')
-  mdata <- d
-
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   #  FIT MODEL WITH BASELINE AS COVARIATE, LOGED DATA HERE : mdata
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -715,8 +719,17 @@
     #  IDEA TO CHANGE DATA SO INTERCEPT IS MEANININGFUL IE FOR A INFORMATIVE VALUE , MEDIAN BASELINE
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    adjustment = median(mdata$baseline)
-    #adjustment = quantile(mdata$baseline, probs=.25)
+    # WARNING, the baseline variable will not be unique
+    # so getting summary stats in it is not advisable
+    #    
+    #summary(mdata$baseline)
+    #adjustment = median(mdata$baseline)  # WRONG
+    
+    df <- dat  # refresh the data
+    df$value <- log(df$value)  
+   # tapply(df$value,df$VISIT, summary)
+    adjustment <- median( df[df$VISIT==1 , "value"] )
+  #   adjustment = quantile(df[df$VISIT==1 , "value"], probs=.5)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -843,11 +856,11 @@
   
   z <- as.data.frame(z)
   
-  emus <- dfs[,c(1,2,6,7)]
+  emus <- dfs[,c(1,2,7,8)]
   names(emus) <- names(z0)
   emus <- cbind(emus[,1], apply(emus[,c(2,3,4)],2,exp))
   
-  musx <- mus[,c(1,2,6,7)]
+  musx <- mus[,c(1,2,7,8)]
   names(musx) <- names(z0)
   
   musx$Approach <- "Untransformed means"
@@ -1009,9 +1022,9 @@
   
    px <- p1 + labs(title = paste0("Individual responses ",
                             length(unique(dplot$ID)),
-                            " patients & modelled mean response with 95% CI from GLS model shown in black\nNumber of patient values at each time point"),
+                            " patients & modelled mean response with 95% CI from GLS model shown in black\nNumber of patient values at each time point. Adjusting for baseline version of response."),
                 #subtitle = "Plot of length by dose",
-                caption = paste0("Adjusted for baseline (visit 1) , baseline= ",p3(adjustment),"")
+                caption = paste0("Adjusted for baseline (visit 1) , baseline= ",p2(adjustment),"")
              )
  
    print(px)
@@ -1039,8 +1052,11 @@ exp(fit.res$coefficients)
 z # as baseline is not centered exp model intercept wont match this
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-##  here new variable, lets adjust baseline so model intercept and predictions align
+# here is a new variable
+# lets adjust baseline so model intercept and predictions align
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 mdata$base <- mdata$baseline-median(mdata$baseline)
+mdata$base <- mdata$baseline-adjustment
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # intercept is now better interpretation
 mdata$x <- relevel(mdata$x, ref= "2")   ##new
@@ -1055,7 +1071,7 @@ fit.res <-
 
 summary(fit.res)
 exp(fit.res$coefficients)
-z # compare exp model intercept to predicton at visit 2 here (x var)
+z # compare exp model intercept to prediction at visit 2 here (x var)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 mdata$x <- relevel(mdata$x, ref= "3")   ##new
 ##new
