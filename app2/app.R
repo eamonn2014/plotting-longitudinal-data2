@@ -282,42 +282,63 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                            
                                            splitLayout(
                                                        
-                                                       tags$head(tags$style(HTML(".shiny-split-layout > div {overflow: visible;}"))),
-                                                       cellWidths = c("0%","50%", "50%"), # note the 0% here at position zero...         
+                                                     tags$head(tags$style(HTML(".shiny-split-layout > div {overflow: visible;}"))),
+                                                     cellWidths = c("0%","40%", "60%"), # note the 0% here at position zero...
                                                        
                                              textInput("adjust", div(h5(tags$span(style="color:blue", "Adjust regression to baseline quantile:"))), value= ".5"),
                                              
                                              selectInput("zplot", div(h5(tags$span(style="color:blue", "Select a plot/estimation approach:"))),
-                                                         list("1 Means calculated on untransformed data" = "zzplot1",
-                                                              "1a Means calculated on untransformed data, antilog presentation" = "zzplot2",
-                                                              "2 Medians calculated on untransformed data" = "zzplot3",
-                                                              "2a Medians calculated on untransformed data, antilog presentation" = "zzplot4",
-                                                              "3 Log transformation, calculate statistics then back transform (exponentiate)" = "zzplot5", 
-                                                              "4 GLS model on natural log data, exponentiated estimates with 95% CI" = "zzplot6" ,
-                                                              "5 LMM model on natural log data, exponentiated estimates with 95% CI" = "zzplot7",
-                                                              "6 Estimate comparison plot" = "zzplot8",
-                                                              "7 GLS model diagnostics" = "zzplot9", width="150px"
-                                                         ), width = 600 )### EDIT HERE)
+                                                         list("1 Log data, obtain GLS model estimates, log scale plot" = "zzplot1",
+                                                              "2 Different approaches together, plotted on untransformed scale" = "zzplot2",
+                                                              "3 Different approaches together, plus raw data, plotted on log transformed scale" = "zzplot3",
+                                                              "4 Log data, obtain GLS model estimates adjusted for baseline version of response, log scale plot" = "zzplot4"
+                                                              
+                                                         ), width = 700 )### EDIT HERE)
                                              
                                              
                                              ),
                                  
                                           plotOutput("PLOT1"),
                                           
+                                          h4(strong("Table 5 GLS Model estimates adjusting for baseline version of response, exponentiated")),
                                           div(class="span7", verbatimTextOutput("z")),
+                                          h4(strong("Table 6 GLS Model adjusting for baseline version of response")),
                                           div(class="span7", verbatimTextOutput("f1")),
                                           
-                                          
+                                          h4(strong("Table 7 GLS Model estimates not adjusting for baseline version of response, exponentiated")),
                                           div(class="span7", verbatimTextOutput("z0")),
+                                          h4(strong("Table 8 GLS Model not adjusting for baseline")),
                                           div(class="span7", verbatimTextOutput("harrell0")),
                                           
-                                           h4(strong("Figure 2 xxxxxxxxxxxxxxxxx")),
- 
-                                           h4(strong("Table 5 xxxxxxxxxxxxxxxxx")),
+                                        
                                            
-                                   )
+                                   ),
                                   
-                                  
+                                  tabPanel("Predictions", 
+                                           
+                                           splitLayout(
+                                             
+                                             tags$head(tags$style(HTML(".shiny-split-layout > div {overflow: visible;}"))),
+                                             cellWidths = c("0%","50%", "50%"), # note the 0% here at position zero...
+                                             
+                                             textInput("adjust2", div(h5(tags$span(style="color:blue", "Adjust regression to baseline quantile:"))), value= ".5"),
+                                             
+                                             textInput("reflevel", div(h5(tags$span(style="color:blue", "Visit reference level"))), value= "5")
+                                           ),
+                                             
+                                           h4(strong("Table 9 Gls predictions at each visit")),
+                                           div(class="span7", verbatimTextOutput("zx")),
+                                          
+                                           h4(strong("Table 10 GLS Model exponentiated coefficients")),
+                                           div(class="span7", verbatimTextOutput("mcoefx")),
+                                           h4(strong("Table 11 GLS Model")),
+                                           div(class="span7", verbatimTextOutput("fit.resx"))
+                                             
+                                           
+                                           
+                                           
+                                           
+                                  )
                                   
                                            #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                   
@@ -1915,25 +1936,7 @@ server <- shinyServer(function(input, output   ) {
                   hi = mean(y,na.rm=T)+2*sd(y,na.rm=T)/sqrt(length(na.omit(y)) ))
 
 
-      # emus <- dfs[,c(1,2,7,8)] ##################
-      # names(emus) <- names(z0)
-      # emus <- cbind(emus[,1], apply(emus[,c(2,3,4)],2,exp))
-      #
-      # musx <- mus[,c(1,2,7,8)] #####################
-      # names(musx) <- names(z0)
-      #
-      # musx$Approach <- "Untransformed means"
-      # emus$Approach <- "log data calc means & exp"
-      #
-      # z0 <- as.data.frame(z0)
-      # z <- as.data.frame(z)
-      #
-      # z0$Approach <- "exp(log GLS with no baseline adj)"
-      # z$Approach <- "exp(log GLS data with baseline adj)"
-      #
-      #
-      # dd <- rbind( musx, emus,  z, z0)  # visit
-      #
+      
       dd$x <- (as.numeric(dd$x))
       #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -2028,6 +2031,7 @@ server <- shinyServer(function(input, output   ) {
           scale_x_continuous(breaks = c(unique(dd$x)),
                              labels = c(unique(dd$x))
           )  +
+          scale_color_hue(direction = 1, h.start=v4) +
           ylab("Response")  +
           xlab("Visit")  +
 
@@ -2083,13 +2087,16 @@ server <- shinyServer(function(input, output   ) {
         scale_x_continuous(breaks = c(unique(dd$x)),
                            labels = c(unique(dd$x))
         ) 
-      
+     
+        
       p1 <-  pd1 + geom_line(data=df, aes(x = VISIT, y = value, color = 'black', group=ID),
                              size=0.5,alpha=.25)  +
         theme(text = element_text(size=10),
               axis.text.x = element_text(angle = 0, vjust = 1, hjust=.5)) +
         
         scale_y_continuous(breaks=c(0.01, 0.1 , 1, 10 , 100), trans='log', labels = comma) +
+        
+        scale_color_hue(direction = 1, h.start=v4) +
         
         # EnvStats::stat_n_text(size = 4, y.pos = max(log(df$value), na.rm=T)*1.1 ,
         #                        y.expand.factor=0,  angle = 0, hjust = .5, family = "mono",
@@ -2121,10 +2128,7 @@ server <- shinyServer(function(input, output   ) {
       
       
     } else  if (input$zplot == "zzplot4") {
-      
-      
-      
-      
+     
       df   <- dat # long data
       
       library(scales)
@@ -2155,6 +2159,8 @@ server <- shinyServer(function(input, output   ) {
         
         scale_x_continuous(breaks = unique(dp$VISIT), labels=unique(dp$VISIT)) +   # labels = comma) + #
         
+        scale_color_hue(direction = 1, h.start=v4) +
+        
         # scale_x_continuous(breaks = c(unique(df$VISIT)),
         #                    c(unique(df$VISIT))) +   # labels = comma) + #
         
@@ -2181,13 +2187,6 @@ server <- shinyServer(function(input, output   ) {
         ylab("Response")  +
         xlab("Visit")  
       
-      # print(p1 + #labs(y="Response", x = "Visit") +
-      #         ggtitle(paste0("Individual responses ",
-      #                        length(unique(dplot$ID)),
-      # " patients & modelled mean response with 95% CI from GLS model shown in black\nNumber of patient values at each time point") )
-      # )
-      
-      
       px <- p1 + labs(title = paste0("Individual responses ",
                                      length(unique(dplot$ID)),
                                      " patients & modelled mean response with 95% CI from GLS model shown in black\nNumber of patient values at each time point. Adjusting for baseline version of response."),
@@ -2198,34 +2197,114 @@ server <- shinyServer(function(input, output   ) {
       print(px)
       
       
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
      }
 
+  })
     
     
     
+    tabby5 <- reactive({
+      
+     
+      mdata <- tabby4()$mdata # wide data
+      
+      data <- make.data() # call in long data
+      dat <- data$d
+      
+      df <- dat                                                 
+      df$value <- log(df$value)                                 # log the response
+      
+      cp <- list(corSymm, corAR1, corCAR1, corExp, corLin, corGaus,corSpher) 
+      k=1  # if you use say corAR1 the approach below wont work!!
     
+      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      # here is a new variable
+      # lets adjust baseline so model intercept and predictions align
+      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      
+      
+      A <- as.numeric(    eval(parse(text= (input$adjust2)) ) )  # pull in quantile from input box
+      # calculate in the long data set otherwise double counting will occur if using wide
+      adjustment <- quantile( df[df$VISIT==1 , "value"] , probs= A )
+      mdata$base <- mdata$baseline-adjustment
+      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      # intercept is now better interpretation
+      mdata$x <- relevel(mdata$x, ref= input$reflevel)   ##new
+      
+      fit.res <-  
+        tryCatch(gls(y ~ x  + base ,
+                     correlation=cp[[k]](form=~ as.numeric(x)|g), 
+                     weights=varIdent(form=~1|x),
+                     mdata, na.action=na.omit) , 
+                 error=function(e) e)
+      
+      
+      fit.res=summary(fit.res)
+      mcoef <- exp(fit.res$coefficients)
+      # compare exp model intercept to prediction at visit 2 here (x var)
+      z <- tabby4()$z # wide data
+      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      # mdata$x <- relevel(mdata$x, ref= "3")   ##new
+      # fit.res <- update(fit.res)    # run the same model
+      # summary(fit.res)
+      # exp(fit.res$coefficients)
+      # z # compare exp model intercept to prediction at visit 3 here (x var)
+      # #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      # mdata$x <- relevel(mdata$x, ref= "4")   ##new
+      # fit.res <- update(fit.res)    # run the same model
+      # summary(fit.res)
+      # exp(fit.res$coefficients)
+      # z # compare exp model intercept to prediction at visit 4 here (x var)
+      # #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      # mdata$x <- relevel(mdata$x, ref= "5")   ##new
+      # fit.res <- update(fit.res)    # run the same model
+      # summary(fit.res)
+      # exp(fit.res$coefficients)
+      # z # compare exp model intercept to prediction at visit 5 here (x var)
+      # #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      # mdata$x <- relevel(mdata$x, ref= "6")   ##new
+      # fit.res <- update(fit.res)    # run the same model
+      # summary(fit.res)
+      # exp(fit.res$coefficients)
+      # z # compare exp model intercept to prediction at visit 6 here (x var)
+      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      
+      
+      
+      
+      
+      
+      return(list(mcoef=mcoef, z=z, fit.res=fit.res  ))
+      
     })
     
     
     
+    output$zx <- renderPrint({
+      
+      summary <- tabby5()$z
+      return(list(summary))
+      
+    })    
+    
+    output$fit.resx <- renderPrint({
+      
+      summary <- tabby5()$fit.res
+      return(list(summary))
+      
+    })    
+    
+    output$mcoefx <- renderPrint({
+      
+      summary <- tabby5()$mcoef
+      return(list(summary))
+      
+    })    
     
     
     
     
+
 })
 
 
