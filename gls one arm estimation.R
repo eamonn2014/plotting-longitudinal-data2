@@ -1058,94 +1058,58 @@ z # as baseline is not centered exp model intercept wont match this
 mdata$base <- mdata$baseline-median(mdata$baseline)
 mdata$base <- mdata$baseline-adjustment
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# intercept is now better interpretation
-mdata$x <- relevel(mdata$x, ref= "2")   ##new
-
-fit.res <-  
-  tryCatch(gls(y ~ x  + base ,
-               correlation=cp[[k]](form=~ as.numeric(x)|g), 
-               weights=varIdent(form=~1|x),
-               mdata, na.action=na.omit) , 
-           error=function(e) e)
-
-
-summary(fit.res)
-exp(fit.res$coefficients)
-z # compare exp model intercept to prediction at visit 2 here (x var)
+  # intercept is now better interpretation
+  mdata$x <- relevel(mdata$x, ref= "2")   ##new
+  
+  fit.res <-  
+    tryCatch(gls(y ~ x  + base ,
+                 correlation=cp[[k]](form=~ as.numeric(x)|g), 
+                 weights=varIdent(form=~1|x),
+                 mdata, na.action=na.omit) , 
+             error=function(e) e)
+  
+  
+  summary(fit.res)
+  exp(fit.res$coefficients)
+  z # compare exp model intercept to prediction at visit 2 here (x var)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-mdata$x <- relevel(mdata$x, ref= "3")   ##new
-##new
-
-fit.res <-  
-  tryCatch(gls(y ~ x  + base ,
-               correlation=cp[[k]](form=~ as.numeric(x)|g), 
-               weights=varIdent(form=~1|x),
-               mdata, na.action=na.omit) , 
-           error=function(e) e)
-
-
-summary(fit.res)
-exp(fit.res$coefficients)
-z # compare exp model intercept to predicton at visit 3 here (x var)
+  mdata$x <- relevel(mdata$x, ref= "3")   ##new
+  fit.res <- update(fit.res)    # run the same model
+  summary(fit.res)
+  exp(fit.res$coefficients)
+  z # compare exp model intercept to prediction at visit 3 here (x var)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-mdata$x <- relevel(mdata$x, ref= "5")  
-
-fit.res <-  
-  tryCatch(gls(y ~ x  + base ,
-               correlation=cp[[k]](form=~ as.numeric(x)|g), 
-               weights=varIdent(form=~1|x),
-              mdata, na.action=na.omit) , 
-           error=function(e) e)
-
-
-summary(fit.res)
-exp(fit.res$coefficients)
-z # compare exp model intercept to predicton at visit 5 here (x var)
+  mdata$x <- relevel(mdata$x, ref= "4")   ##new
+  fit.res <- update(fit.res)    # run the same model
+  summary(fit.res)
+  exp(fit.res$coefficients)
+  z # compare exp model intercept to prediction at visit 4 here (x var)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-mdata$x <- relevel(mdata$x, ref= "4")  
-
-fit.res <-  
-  tryCatch(gls(y ~ x  + base ,
-               correlation=cp[[k]](form=~ as.numeric(x)|g), 
-               weights=varIdent(form=~1|x),
-               mdata, na.action=na.omit) , 
-           error=function(e) e)
-
-
-summary(fit.res)
-exp(fit.res$coefficients)
-z # compare exp model intercept to predicton at visit 4 here (x var)
+  mdata$x <- relevel(mdata$x, ref= "5")   ##new
+  fit.res <- update(fit.res)    # run the same model
+  summary(fit.res)
+  exp(fit.res$coefficients)
+  z # compare exp model intercept to prediction at visit 5 here (x var)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-mdata$x <- relevel(mdata$x, ref= "6")  
-
-fit.res <-  
-  tryCatch(gls(y ~ x  + base ,
-               correlation=cp[[k]](form=~ as.numeric(x)|g), 
-               weights=varIdent(form=~1|x),
-               mdata, na.action=na.omit) , 
-           error=function(e) e)
-
-
-summary(fit.res)
-exp(fit.res$coefficients)
-z # compare exp model intercept to predicton at visit 6 here (x var)
+  mdata$x <- relevel(mdata$x, ref= "6")   ##new
+  fit.res <- update(fit.res)    # run the same model
+  summary(fit.res)
+  exp(fit.res$coefficients)
+  z # compare exp model intercept to prediction at visit 6 here (x var)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-###Harrell's Gls
-
-##  here new variable.
-d <- mdata
-d$base <- d$baseline-median(d$baseline)
-adjustment = median(d$baseline)
-d$x <- relevel(d$x, ref= "4")   ##new
-dd <- datadist(d); 
-options(datadist='dd')
-
-(f  <-  tryCatch(Gls(y ~ x  + base ,
-                    correlation=cp[[k]](form=~ as.numeric(x)|g), 
-                    weights=varIdent(form=~1|x),
-                    d, na.action=na.omit) , 
-                error=function(e) e))
-exp(f$coefficients)
-harrell  # Harrell or z
-
+# check it out using Harrell's Gls
+# here new variable.
+  
+  mdata$x <- relevel(mdata$x, ref= "4")   ##new
+  dd <- datadist(mdata); 
+  options(datadist='dd')
+  
+  (f  <-  tryCatch(Gls(y ~ x  + base ,
+                      correlation=cp[[k]](form=~ as.numeric(x)|g), 
+                      weights=varIdent(form=~1|x),
+                      mdata, na.action=na.omit) , 
+                  error=function(e) e))
+  exp(f$coefficients)
+  harrell  # Harrell or z
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  
