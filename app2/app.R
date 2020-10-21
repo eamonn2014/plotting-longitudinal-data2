@@ -2206,78 +2206,76 @@ server <- shinyServer(function(input, output   ) {
     tabby5 <- reactive({
       
      
+      
       mdata <- tabby4()$mdata # wide data
       
       data <- make.data() # call in long data
       dat <- data$d
-      
       df <- dat                                                 
       df$value <- log(df$value)                                 # log the response
-      
-      cp <- list(corSymm, corAR1, corCAR1, corExp, corLin, corGaus,corSpher) 
-      k=1  # if you use say corAR1 the approach below wont work!!
-    
-      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      # here is a new variable
-      # lets adjust baseline so model intercept and predictions align
-      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       
       
       A <- as.numeric(    eval(parse(text= (input$adjust2)) ) )  # pull in quantile from input box
       # calculate in the long data set otherwise double counting will occur if using wide
       adjustment <- quantile( df[df$VISIT==1 , "value"] , probs= A )
-      mdata$base <- mdata$baseline-adjustment
-      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      # intercept is now better interpretation
-      mdata$x <- relevel(mdata$x, ref= input$reflevel)   ##new
+     
       
-      fit.res <-  
-        tryCatch(gls(y ~ x  + base ,
+      # create wide dataset
+      w1 <-   merge(df,setNames(subset(df, 
+                                       VISIT==1,select=c("ID", "value")),
+                                c('ID', 'baseline')), by='ID')
+      
+      # remove visit 1 as we have made this as a baseline variable now
+      w <- w1[!w1$VISIT %in% 1, ]
+      d <- w
+      d <- droplevels(d)
+      
+      d$y <- d$value
+      d$x <- factor(d$VISIT)
+      d$g <- d$ID
+      mdata  <- d
+      mdata$base <- mdata$baseline-adjustment
+      
+      dd <- datadist(mdata)
+      options(datadist='dd')
+   
+      
+                                  # log the response
+      
+      cp <- list(corSymm, corAR1, corCAR1, corExp, corLin, corGaus,corSpher) 
+      k=1  # if you use say corAR1 the approach below wont work!!
+      
+      
+      reference <-  
+        tryCatch(Gls(y ~ x  + baseline,
                      correlation=cp[[k]](form=~ as.numeric(x)|g), 
                      weights=varIdent(form=~1|x),
                      mdata, na.action=na.omit) , 
                  error=function(e) e)
       
       
-      fit.res=summary(fit.res)
-      mcoef <- exp(fit.res$coefficients)
-      # compare exp model intercept to prediction at visit 2 here (x var)
-      z <- tabby4()$z # wide data
-      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      # mdata$x <- relevel(mdata$x, ref= "3")   ##new
-      # fit.res <- update(fit.res)    # run the same model
-      # summary(fit.res)
-      # exp(fit.res$coefficients)
-      # z # compare exp model intercept to prediction at visit 3 here (x var)
-      # #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      # mdata$x <- relevel(mdata$x, ref= "4")   ##new
-      # fit.res <- update(fit.res)    # run the same model
-      # summary(fit.res)
-      # exp(fit.res$coefficients)
-      # z # compare exp model intercept to prediction at visit 4 here (x var)
-      # #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      # mdata$x <- relevel(mdata$x, ref= "5")   ##new
-      # fit.res <- update(fit.res)    # run the same model
-      # summary(fit.res)
-      # exp(fit.res$coefficients)
-      # z # compare exp model intercept to prediction at visit 5 here (x var)
-      # #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      # mdata$x <- relevel(mdata$x, ref= "6")   ##new
-      # fit.res <- update(fit.res)    # run the same model
-      # summary(fit.res)
-      # exp(fit.res$coefficients)
-      # z # compare exp model intercept to prediction at visit 6 here (x var)
-      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      z2 <- Predict(reference, x ,  baseline=  median( df[df$VISIT==1 , "value"] )
+                      , fun=exp) # defaults to median baseline as the adjustment
+  
       
+      # now we relevel
+      mdata$x <- relevel(mdata$x, ref= input$reflevel)   ##new
       
+      fit.res2 <-  
+        tryCatch(Gls(y ~ x  + base ,
+                     correlation=cp[[k]](form=~ as.numeric(x)|g), 
+                     weights=varIdent(form=~1|x),
+                     mdata, na.action=na.omit) , 
+                 error=function(e) e)
+       
+      mcoef <- exp(fit.res2$coefficients)
+ 
+      #z2 <- Predict(fit.res2, x) #,  fun=exp)# we can exp automatically
+     
       
-      
-      
-      
-      return(list(mcoef=mcoef, z=z, fit.res=fit.res  ))
+      return(list(mcoef=mcoef, z=z2, fit.res=fit.res2  ))
       
     })
-    
     
     
     output$zx <- renderPrint({
