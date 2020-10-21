@@ -381,7 +381,7 @@
     food4[c(4,5,6,8,9,10,11,12)] <- lapply(food4[c(4,5,6,8,9,10,11,12)], function(x) exp(x))
     
     names(food4) <- c("Visit","Variable","Data points","Mean", "SD","SE","Subjects", "lower95%CI", "Upper95%CI", "Med", "Min","Max", "Missing")  
-    print(kable(food2, format="pandoc", row.names = FALSE, digits = c(3)))
+    print(kable(food4, format="pandoc", row.names = FALSE, digits = c(3)))
 
 
 
@@ -1036,7 +1036,7 @@
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   
   cp <- list(corSymm, corAR1, corCAR1, corExp, corLin, corGaus,corSpher) 
-  k=1
+  k=1  # if you use say corAR1 the approach below wont work!!
   
 # original baseline adjusted model on logged original data
 fit.res <-  
@@ -1055,7 +1055,7 @@ z # as baseline is not centered exp model intercept wont match this
 # here is a new variable
 # lets adjust baseline so model intercept and predictions align
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-mdata$base <- mdata$baseline-median(mdata$baseline)
+#mdata$base <- mdata$baseline-median(mdata$baseline)
 mdata$base <- mdata$baseline-adjustment
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # intercept is now better interpretation
