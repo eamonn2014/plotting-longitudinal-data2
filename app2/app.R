@@ -201,7 +201,7 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
      
                    ")), 
                                   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~end of section to add colour     
-                                  tabPanel("Plotting longitudinal data & estimating averages with the help of a natural log transformation", 
+                                  tabPanel("Plotting & estimating", 
                                            
                                            #h4(strong("Plot the data. Always plot the data.")),
                                            plotOutput("reg.plot"),
@@ -275,7 +275,42 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                           h4(strong("Table 4 LMM model fit to natural logged data, the LMM model estimates and 95% CI are then exponentiated")),
                                            
                                            
-                                   ) 
+                                   ) ,
+                                  
+                                  
+                                  tabPanel("Adjust for baseline", 
+                                           
+                                           splitLayout(
+                                                       
+                                                       tags$head(tags$style(HTML(".shiny-split-layout > div {overflow: visible;}"))),
+                                                       cellWidths = c("0%","50%", "50%"), # note the 0% here at position zero...         
+                                                       
+                                             textInput("adjust", div(h5(tags$span(style="color:blue", "Adjust regression to baseline quantile:"))), value= ".5"),
+                                             
+                                             selectInput("plot", div(h5(tags$span(style="color:blue", "Select a plot/estimation approach:"))),
+                                                         list("1 Means calculated on untransformed data" = "plot1",
+                                                              "1a Means calculated on untransformed data, antilog presentation" = "plot1x",
+                                                              "2 Medians calculated on untransformed data" = "plot1a",
+                                                              "2a Medians calculated on untransformed data, antilog presentation" = "plot1ax",
+                                                              "3 Log transformation, calculate statistics then back transform (exponentiate)" = "plot2", 
+                                                              "4 GLS model on natural log data, exponentiated estimates with 95% CI" = "plot3" ,
+                                                              "5 LMM model on natural log data, exponentiated estimates with 95% CI" = "plot3a",
+                                                              "6 Estimate comparison plot" = "plot4",
+                                                              "7 GLS model diagnostics" = "plot5", width="150px"
+                                                         ), width = 600 )### EDIT HERE)
+                                             
+                                             
+                                             ),
+                                 
+                                       
+                                           h4(strong("Figure 2 xxxxxxxxxxxxxxxxx")),
+ 
+                                           h4(strong("Table 5 xxxxxxxxxxxxxxxxx")),
+                                           
+                                   )
+                                  
+                                  
+                                  
                                            #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                   
                                   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1340,7 +1375,7 @@ server <- shinyServer(function(input, output   ) {
                 geom_errorbar(aes(ymin=Lower, ymax=Upper ), color="black", width=.05, lwd=.2) +
                 
                 
-                scale_y_continuous(breaks=c(0.01,      0.1 ,     1,       10 ,      100), trans='log', labels = comma) +
+                scale_y_continuous(breaks=c(0.01,  0.1 ,   1,   10 ,  100), trans='log', labels = comma) +
                 
                 
                 ylab("Response")  +
@@ -1348,7 +1383,7 @@ server <- shinyServer(function(input, output   ) {
                 
                 
                 scale_x_continuous(breaks = c(unique(df$VISIT)),
-                                   c(unique(df$VISIT))) +   # labels = comma) + #
+                                  labels= c(unique(df$VISIT))) +   # labels = comma) + #
                 
                scale_color_hue(direction = v3, h.start=v4) +
                 EnvStats::stat_n_text(size = 4, y.pos = max(log(dplot$value), na.rm=T)*1.1 ,
@@ -1412,7 +1447,7 @@ server <- shinyServer(function(input, output   ) {
                 
                 
                 scale_x_continuous(breaks = c(unique(df$VISIT)),
-                                   c(unique(df$VISIT))) +   # labels = comma) + #
+                                   labels=  c(unique(df$VISIT))) +   # labels = comma) + #
                 
                scale_color_hue(direction = v3, h.start=v4) +
             
@@ -1703,17 +1738,9 @@ server <- shinyServer(function(input, output   ) {
 
      })     
     ###################################################################
-    #repeats############################################################
+    #repeats###########################################################
     ###################################################################
-    
-    
-    
-    
-    
-    
-    
-    
-    
+   
     
     output$reg.summary8 <- renderPrint({
         
@@ -1733,6 +1760,80 @@ server <- shinyServer(function(input, output   ) {
         summary <- check()$f1
         return(list(summary))
     })     
+    
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # start on new tab adjusting for baseline
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    
+    tabby4 <- reactive({
+      
+      data <- make.data() # call in data
+      dat <- data$d
+      
+      df <- dat                                                 # refresh the data
+      df$value <- log(df$value)                                 # log the response
+      
+      # what value should we adjust 
+      A <- as.numeric(    eval(parse(text= (input$adjust)) ) )  # pull in quantile from input box
+      
+      # calculate in the long data set otherwise double counting will occur if using wide
+      adjustment <- quantile( df[df$VISIT==1 , "value"] , probs= A )
+      
+      # create wide dataset
+      w1 <-   merge(df,setNames(subset(df, 
+                                VISIT==1,select=c("ID", "value")),
+                                c('ID', 'baseline')), by='ID')
+      
+      # remove visit 1 as we have made this as a baseline variable now
+      w <- w1[!w1$VISIT %in% 1, ]
+      d <- w
+      d <- droplevels(d)
+      
+      d$y <- d$value
+      d$x <- factor(d$VISIT)
+      d$g <- d$ID
+      mdata  <- d
+      
+      dd <- datadist(mdata)
+      options(datadist='dd')
+      
+      # run the baseline adjusted model, no centering yet
+      f1  <-  tryCatch(Gls(y ~ x  + baseline ,
+                            correlation=corSymm(form=~ as.numeric(x)|g), 
+                            weights=varIdent(form=~1|x),
+                            mdata, na.action=na.omit) , 
+                        error=function(e) e)
+      
+      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      #  PREDICT ON FRANK HARRELL,WE CAN EXPONENTIATE IN THE FUNCTION !
+      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      z <- Predict(f1, x , baseline=adjustment, fun=exp) # we can exp automatically
+      z$baseline <- NULL  # drop this
+      harrell <- z   # save objects
+      
+      
+      return(list(mdata=mdata , z=z, harrell= harrell))
+    
+    })
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     
     
     
