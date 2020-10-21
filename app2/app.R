@@ -302,7 +302,7 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                              
                                              ),
                                  
-                                          # plotOutput("PLOT1"),
+                                          plotOutput("PLOT1"),
                                           
                                           div(class="span7", verbatimTextOutput("z")),
                                           div(class="span7", verbatimTextOutput("f1")),
@@ -1872,177 +1872,191 @@ server <- shinyServer(function(input, output   ) {
       
     })    
     
-    
      
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    # 
-    # 
-    # output$PLOT1 <- renderPlot({         
-    #   
-    #   # Get the current regression data
-    #   data <- make.data()
-    #   dat <- data$d
-    #   
-    #   zz <- tabby4()
-    #   
-    #   # z0 <- zz$z0
-    #   # z0 <- as.data.frame(z0)
-    #   # names(z0) <- c("Visit", "Estimate",   "Lower", "Upper")
-    #   # z0$Visit <- as.numeric(as.character(z0$Visit))
-    #   
-    #   z <- zz$z
-    #   z <- as.data.frame(z)
-    #   names(z) <- c("Visit", "Estimate",   "Lower", "Upper")
-    #   z$Visit <- as.numeric(as.character(z$Visit))
-    #   
-    #   
-    #   
-    #   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    #   
-    #   df    <- dat
-    #   df$x <- df$VISIT
-    #   df$y <- df$value   #not LOGGING
-    #   #df$g <- df$ID
-    #   
-    #   mus <- df %>%
-    #     group_by(x) %>%
-    #     summarise(mu=mean(y,na.rm=T),med=median(y,na.rm=T),
-    #               sd=sd(y,na.rm=T), n=length(na.omit(y)), se=sd(y,na.rm=T)/sqrt(length(na.omit(y))),
-    #               lo = mean(y,na.rm=T)-2*sd(y,na.rm=T)/sqrt(length(na.omit(y))),
-    #               hi = mean(y,na.rm=T)+2*sd(y,na.rm=T)/sqrt(length(na.omit(y)) ))
-    #   
-    #   
-    #   df$y <- log(df$value)   #LOGGING
-    #   
-    #   dfs<- df %>%
-    #     group_by(x) %>%
-    #     summarise(mu=mean(y,na.rm=T),med=median(y,na.rm=T), 
-    #               sd=sd(y,na.rm=T), n=length(na.omit(y)), se=sd(y,na.rm=T)/sqrt(length(na.omit(y))),
-    #               lo = mean(y,na.rm=T)-2*sd(y,na.rm=T)/sqrt(length(na.omit(y))),
-    #               hi = mean(y,na.rm=T)+2*sd(y,na.rm=T)/sqrt(length(na.omit(y)) ))
-    #   
-    #   
-    #   # emus <- dfs[,c(1,2,7,8)] ##################
-    #   # names(emus) <- names(z0)
-    #   # emus <- cbind(emus[,1], apply(emus[,c(2,3,4)],2,exp))
-    #   # 
-    #   # musx <- mus[,c(1,2,7,8)] #####################
-    #   # names(musx) <- names(z0)
-    #   # 
-    #   # musx$Approach <- "Untransformed means"
-    #   # emus$Approach <- "log data calc means & exp"
-    #   # 
-    #   # z0 <- as.data.frame(z0)
-    #   # z <- as.data.frame(z)
-    #   # 
-    #   # z0$Approach <- "exp(log GLS with no baseline adj)"
-    #   # z$Approach <- "exp(log GLS data with baseline adj)"
-    #   # 
-    #   # 
-    #   # dd <- rbind( musx, emus,  z, z0)  # visit
-    #   # 
-    #   dd$x <- (as.numeric(dd$x))
-    #   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    #   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    #   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    #   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    #   
-    #   if (input$zplot == "zzplot1") {    
-    # 
-    #     df <- dat # long data
-    #     
-    #     library(scales)
-    #     
-    #     dplot <- merge(z0,  df , by.x="Visit", by.y="VISIT")  # could use z0 rather than est
-    #     
-    #     dplot <- dplot[complete.cases(dplot),]
-    #     
-    #     p <- ggplot(data = dplot, aes(x=Visit , y=Estimate, group=1)) +
-    #       geom_point() + geom_line() +   guides(color=FALSE) +
-    #       geom_errorbar(aes(ymin=Lower, ymax=Upper ), color="black", width=.05, lwd=.2) 
-    #     
-    #     # using df here
-    #     p1 <- p +geom_line(data=df, aes(x = VISIT, y = value, color = ID, group=ID),size=0.5,alpha=.2)  +
-    #       theme(text = element_text(size=10),
-    #             axis.text.x = element_text(angle = 0, vjust = 1, hjust=.5)) +
-    #       
-    #       scale_y_continuous(breaks=c(0.01,  0.1 ,  1,  10 , 100), trans='log', labels = comma) +
-    #       
-    #       ylab("Response")  +
-    #       xlab("Visit")  +
-    #       
-    #       scale_x_continuous(breaks = c(unique(df$VISIT)),
-    #                          labels = c(unique(df$VISIT))) +   # labels = comma) + #
-    #       
-    #       # scale_x_continuous(breaks = as.character(as.numeric(unique(df$VISIT))),
-    #       #                    as.character(as.numeric(unique(df$VISIT)))) +   # labels = comma) + #
-    #       # 
-    #       scale_color_hue(direction = 1, h.start=v4) +
-    #       
-    #       EnvStats::stat_n_text(size = 4, y.pos = max(log(dplot$value), na.rm=T)*1.1 ,
-    #                             y.expand.factor=0,  angle = 0, hjust = .5, family = "mono", fontface = "plain") +#295 bold
-    #       
-    #       theme(panel.background=element_blank(),
-    #             # axis.text.y=element_blank(),
-    #             # axis.ticks.y=element_blank(),
-    #             # https://stackoverflow.com/questions/46482846/ggplot2-x-axis-extreme-right-tick-label-clipped-after-insetting-legend
-    #             # stop axis being clipped
-    #             plot.title=element_text(), plot.margin = unit(c(5.5,12,5.5,5.5), "pt"),
-    #             legend.text=element_text(size=12),
-    #             legend.title=element_text(size=14),
-    #             axis.text.x  = element_text(size=10),
-    #             axis.text.y  = element_text(size=10),
-    #             axis.line.x = element_line(color="black"),
-    #             axis.line.y = element_line(color="black"),
-    #             plot.caption=element_text(hjust = 0, size = 7))
-    #     
-    #     print(p1 + labs(y="Response", x = "Visit") +
-    #             ggtitle(paste0("Individual responses ",
-    #                            length(unique(dplot$ID))," patients & modelled mean response with 95% CI from GLS model shown in black\nNumber of patient values at each time point") )
-    #     )
-    #     
-    #   } else  if (input$zplot == "zzplot2") {   
-    #       
-    #     
-    #     # The errorbars overlapped, so use position_dodge to move them horizontally
-    #     pd <- position_dodge(0.4) # move them .05 to the left and right
-    #     
-    #     pd1 <- ggplot(dd, aes(x= x, y=yhat, colour=Approach)) + 
-    #       geom_errorbar(aes(ymin=lower, ymax=upper), width=.1, position=pd) +
-    #       geom_line(position=pd) +
-    #       geom_point(position=pd) +
-    #       scale_x_continuous(breaks = c(unique(dd$x)),
-    #                          labels = c(unique(dd$x))
-    #       )  +
-    #       ylab("Response")  +
-    #       xlab("Visit")  +
-    #       
-    #       theme(panel.background=element_blank(),
-    #             # axis.text.y=element_blank(),
-    #             # axis.ticks.y=element_blank(),
-    #             # https://stackoverflow.com/questions/46482846/ggplot2-x-axis-extreme-right-tick-label-clipped-after-insetting-legend
-    #             # stop axis being clipped
-    #             plot.title=element_text(), plot.margin = unit(c(5.5,12,5.5,5.5), "pt"),
-    #             legend.text=element_text(size=12),
-    #             legend.title=element_text(size=14),
-    #             axis.text.x  = element_text(size=10),
-    #             axis.text.y  = element_text(size=10),
-    #             axis.line.x = element_line(color="black"),
-    #             axis.line.y = element_line(color="black"),
-    #             plot.caption=element_text(hjust = 0, size = 7))
-    #     
-    #     print(pd1 + labs(y="Response", x = "Visit") + 
-    #             ggtitle(paste0("Estimates of central tendancy from the different approaches") )
-    #     )
-    #     
-    #     
-    #     
-    #   }
-    #   
-      
-    
-   #   })
-    
+    output$PLOT1 <- renderPlot({
+
+      # Get the current regression data
+      data <- make.data()
+      dat <- data$d
+
+      K <- tabby4()
+
+      z0 <-K$z0
+      z0 <- as.data.frame(z0)
+      names(z0) <- c("Visit", "Estimate",   "Lower", "Upper")
+      z0$Visit <- as.numeric(as.character(z0$Visit))
+
+      z <- K$z
+      z <- as.data.frame(z)
+      names(z) <- c("Visit", "Estimate",   "Lower", "Upper")
+      z$Visit <- as.numeric(as.character(z$Visit))
+
+      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      df   <- dat
+      df$x <- df$VISIT
+      df$y <- df$value   #not LOGGING
+      #df$g <- df$ID
+
+      mus <- df %>%
+        group_by(x) %>%
+        summarise(mu=mean(y,na.rm=T),med=median(y,na.rm=T),
+                  sd=sd(y,na.rm=T), n=length(na.omit(y)), se=sd(y,na.rm=T)/sqrt(length(na.omit(y))),
+                  lo = mean(y,na.rm=T)-2*sd(y,na.rm=T)/sqrt(length(na.omit(y))),
+                  hi = mean(y,na.rm=T)+2*sd(y,na.rm=T)/sqrt(length(na.omit(y)) ))
+
+
+      df$y <- log(df$value)   #LOGGING
+
+      dfs<- df %>%
+        group_by(x) %>%
+        summarise(mu=mean(y,na.rm=T),med=median(y,na.rm=T),
+                  sd=sd(y,na.rm=T), n=length(na.omit(y)), se=sd(y,na.rm=T)/sqrt(length(na.omit(y))),
+                  lo = mean(y,na.rm=T)-2*sd(y,na.rm=T)/sqrt(length(na.omit(y))),
+                  hi = mean(y,na.rm=T)+2*sd(y,na.rm=T)/sqrt(length(na.omit(y)) ))
+
+
+      # emus <- dfs[,c(1,2,7,8)] ##################
+      # names(emus) <- names(z0)
+      # emus <- cbind(emus[,1], apply(emus[,c(2,3,4)],2,exp))
+      #
+      # musx <- mus[,c(1,2,7,8)] #####################
+      # names(musx) <- names(z0)
+      #
+      # musx$Approach <- "Untransformed means"
+      # emus$Approach <- "log data calc means & exp"
+      #
+      # z0 <- as.data.frame(z0)
+      # z <- as.data.frame(z)
+      #
+      # z0$Approach <- "exp(log GLS with no baseline adj)"
+      # z$Approach <- "exp(log GLS data with baseline adj)"
+      #
+      #
+      # dd <- rbind( musx, emus,  z, z0)  # visit
+      #
+      dd$x <- (as.numeric(dd$x))
+      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+      if (input$zplot == "zzplot1") {
+
+        df <- dat # long data
+
+        library(scales)
+
+        dplot <- merge(z0,  df , by.x="Visit", by.y="VISIT")  # could use z0 rather than est
+
+        dplot <- dplot[complete.cases(dplot),]
+
+        p <- ggplot(data = dplot, aes(x=Visit , y=Estimate, group=1)) +
+          geom_point() + geom_line() +   guides(color=FALSE) +
+          geom_errorbar(aes(ymin=Lower, ymax=Upper ), color="black", width=.05, lwd=.2)
+
+        # using df here
+        p1 <- p +geom_line(data=df, aes(x = VISIT, y = value, color = ID, group=ID),size=0.5,alpha=.2)  +
+          theme(text = element_text(size=10),
+                axis.text.x = element_text(angle = 0, vjust = 1, hjust=.5)) +
+
+          scale_y_continuous(breaks=c(0.01,  0.1 ,  1,  10 , 100), trans='log', labels = comma) +
+
+          ylab("Response")  +
+          xlab("Visit")  +
+
+          scale_x_continuous(breaks = c(unique(df$VISIT)),
+                             labels = c(unique(df$VISIT))) +   # labels = comma) + #
+
+          # scale_x_continuous(breaks = as.character(as.numeric(unique(df$VISIT))),
+          #                    as.character(as.numeric(unique(df$VISIT)))) +   # labels = comma) + #
+          #
+          scale_color_hue(direction = 1, h.start=v4) +
+
+          EnvStats::stat_n_text(size = 4, y.pos = max(log(dplot$value), na.rm=T)*1.1 ,
+                                y.expand.factor=0,  angle = 0, hjust = .5, family = "mono", fontface = "plain") +#295 bold
+
+          theme(panel.background=element_blank(),
+                # axis.text.y=element_blank(),
+                # axis.ticks.y=element_blank(),
+                # https://stackoverflow.com/questions/46482846/ggplot2-x-axis-extreme-right-tick-label-clipped-after-insetting-legend
+                # stop axis being clipped
+                plot.title=element_text(), plot.margin = unit(c(5.5,12,5.5,5.5), "pt"),
+                legend.text=element_text(size=12),
+                legend.title=element_text(size=14),
+                axis.text.x  = element_text(size=10),
+                axis.text.y  = element_text(size=10),
+                axis.line.x = element_line(color="black"),
+                axis.line.y = element_line(color="black"),
+                plot.caption=element_text(hjust = 0, size = 7))
+
+        print(p1 + labs(y="Response", x = "Visit") +
+                ggtitle(paste0("Individual responses ",
+                               length(unique(dplot$ID))," patients & modelled mean response with 95% CI from GLS model shown in black\nNumber of patient values at each time point") )
+        )
+
+      } else  if (input$zplot == "zzplot2") {
+
+        z0 <- tabby4()$z0
+        z <- tabby4()$z
+        z0 <- as.data.frame(z0)
+        z <- as.data.frame(z)
+        
+        emus <- dfs[,c(1,2,7,8)]
+        names(emus) <- names(z0)
+        emus <- cbind(emus[,1], apply(emus[,c(2,3,4)],2,exp))
+        
+        musx <- mus[,c(1,2,7,8)]
+        names(musx) <- names(z0)
+        
+        musx$Approach <- "Untransformed means"
+        emus$Approach <- "log data calc means & exp"
+        z0$Approach <- "exp(log GLS with no baseline adj)"
+        z$Approach <- "exp(log GLS data with baseline adj)"
+        
+        
+        dd <- rbind( musx, emus,  z, z0)  # visit
+        
+        dd$x <- (as.numeric(dd$x))
+        
+        # The errorbars overlapped, so use position_dodge to move them horizontally
+        pd <- position_dodge(0.4) # move them .05 to the left and right
+
+        pd1 <- ggplot(dd, aes(x= x, y=yhat, colour=Approach)) +
+          geom_errorbar(aes(ymin=lower, ymax=upper), width=.1, position=pd) +
+          geom_line(position=pd) +
+          geom_point(position=pd) +
+          scale_x_continuous(breaks = c(unique(dd$x)),
+                             labels = c(unique(dd$x))
+          )  +
+          ylab("Response")  +
+          xlab("Visit")  +
+
+          theme(panel.background=element_blank(),
+                # axis.text.y=element_blank(),
+                # axis.ticks.y=element_blank(),
+                # https://stackoverflow.com/questions/46482846/ggplot2-x-axis-extreme-right-tick-label-clipped-after-insetting-legend
+                # stop axis being clipped
+                plot.title=element_text(), plot.margin = unit(c(5.5,12,5.5,5.5), "pt"),
+                legend.text=element_text(size=12),
+                legend.title=element_text(size=14),
+                axis.text.x  = element_text(size=10),
+                axis.text.y  = element_text(size=10),
+                axis.line.x = element_line(color="black"),
+                axis.line.y = element_line(color="black"),
+                plot.caption=element_text(hjust = 0, size = 7))
+
+        print(pd1 + labs(y="Response", x = "Visit") +
+                ggtitle(paste0("Estimates of central tendancy from the different approaches") )
+        )
+
+
+
+      }
+
+
+
+     })
+
     
     
     
