@@ -2049,19 +2049,176 @@ server <- shinyServer(function(input, output   ) {
                 ggtitle(paste0("Estimates of central tendancy from the different approaches") )
         )
 
+ 
+    } else  if (input$zplot == "zzplot3") {
 
-
-      }
-
-
-
-     })
+      df <- dat # long data
+      
+      z0 <- tabby4()$z0
+      z <- tabby4()$z
+      z0 <- as.data.frame(z0)
+      z <- as.data.frame(z)
+      
+      emus <- dfs[,c(1,2,7,8)]
+      names(emus) <- names(z0)
+      emus <- cbind(emus[,1], apply(emus[,c(2,3,4)],2,exp))
+      
+      musx <- mus[,c(1,2,7,8)]
+      names(musx) <- names(z0)
+      
+      musx$Approach <- "Untransformed means"
+      emus$Approach <- "log data calc means & exp"
+      z0$Approach <- "exp(log GLS with no baseline adj)"
+      z$Approach <- "exp(log GLS data with baseline adj)"
+      
+      
+      dd <- rbind( musx, emus,  z, z0)  # visit
+      
+      dd$x <- (as.numeric(dd$x))
+      
+      pd1 <- ggplot(dd, aes(x= x, y=yhat, colour=Approach)) + 
+        geom_errorbar(aes(ymin=lower, ymax=upper), width=.1, position=pd) +
+        geom_line(position=pd) +
+        geom_point(position=pd) +
+        scale_x_continuous(breaks = c(unique(dd$x)),
+                           labels = c(unique(dd$x))
+        ) 
+      
+      p1 <-  pd1 + geom_line(data=df, aes(x = VISIT, y = value, color = 'black', group=ID),
+                             size=0.5,alpha=.25)  +
+        theme(text = element_text(size=10),
+              axis.text.x = element_text(angle = 0, vjust = 1, hjust=.5)) +
+        
+        scale_y_continuous(breaks=c(0.01, 0.1 , 1, 10 , 100), trans='log', labels = comma) +
+        
+        # EnvStats::stat_n_text(size = 4, y.pos = max(log(df$value), na.rm=T)*1.1 ,
+        #                        y.expand.factor=0,  angle = 0, hjust = .5, family = "mono",
+        #                       fontface = "plain") + 
+        
+        ylab("Response")  +
+        xlab("Visit")  +
+        
+        
+        theme(panel.background=element_blank(),
+              # axis.text.y=element_blank(),
+              # axis.ticks.y=element_blank(),
+              # https://stackoverflow.com/questions/46482846/ggplot2-x-axis-extreme-right-tick-label-clipped-after-insetting-legend
+              # stop axis being clipped
+              plot.title=element_text(), plot.margin = unit(c(5.5,12,5.5,5.5), "pt"),
+              legend.text=element_text(size=12),
+              legend.title=element_text(size=14),
+              legend.position="none",
+              axis.text.x  = element_text(size=10),
+              axis.text.y  = element_text(size=10),
+              axis.line.x = element_line(color="black"),
+              axis.line.y = element_line(color="black"),
+              plot.caption=element_text(hjust = 0, size = 7))
+      
+      print(p1 + labs(y="Response", x = "Visit") + 
+              ggtitle(paste0("Estimates of central tendancy from the different approaches") )
+      )
+      
+      
+      
+    } else  if (input$zplot == "zzplot4") {
+      
+      
+      
+      
+      df   <- dat # long data
+      
+      library(scales)
+      
+      z <- tabby4()$z
+      zz<- as.data.frame(z)
+      
+      dp <- merge(zz,  df , by.x="x", by.y="VISIT", all=TRUE)
+      
+      dp$VISIT <- as.numeric(as.character(dp$x))
+      dp$VISIT <- ifelse(  is.na( dp$VISIT) , 1, dp$VISIT)
+      dp$VISIT <- factor(dp$VISIT)
+      
+      dp$VISIT <- (as.numeric(dp$VISIT))
+      
+      p <- ggplot(data = dp, aes(x=VISIT , y=yhat, group=1)) +
+        geom_point() + geom_line() +   guides(color=FALSE) +
+        geom_errorbar(aes(ymin=lower, ymax=upper ), color="black", width=.05, lwd=.2) 
+      
+      p1 <-  p +geom_line(data=dp, aes(x = VISIT, y = value, color = ID, group=ID),size=0.5,alpha=.2)  +
+        theme(text = element_text(size=10),
+              axis.text.x = element_text(angle = 0, vjust = 1, hjust=.5)) +
+        
+        scale_y_continuous(breaks=c(0.01,  0.1 ,  1,  10 ,  100), trans='log', labels = comma) +
+        
+        # ylab("Response")  +
+        # xlab("Visit")  +
+        
+        scale_x_continuous(breaks = unique(dp$VISIT), labels=unique(dp$VISIT)) +   # labels = comma) + #
+        
+        # scale_x_continuous(breaks = c(unique(df$VISIT)),
+        #                    c(unique(df$VISIT))) +   # labels = comma) + #
+        
+        EnvStats::stat_n_text(size = 4, y.pos = max(log(dplot$value), na.rm=T)*1.1 ,
+                              y.expand.factor=0,  angle = 0, hjust = .5, family = "mono", fontface = "plain") +#295 bold
+        
+        
+        theme(panel.background=element_blank(),
+              # axis.text.y=element_blank(),
+              # axis.ticks.y=element_blank(),
+              # https://stackoverflow.com/questions/46482846/ggplot2-x-axis-extreme-right-tick-label-clipped-after-insetting-legend
+              # stop axis being clipped
+              plot.title=element_text(), plot.margin = unit(c(5.5,12,5.5,5.5), "pt"),
+              legend.text=element_text(size=12),
+              legend.title=element_text(size=14),
+              axis.text.x  = element_text(size=10),
+              axis.text.y  = element_text(size=10),
+              axis.line.x = element_line(color="black"),
+              axis.line.y = element_line(color="black"),
+              plot.caption=element_text(hjust = 0, size = 7),
+              axis.title = element_text()
+        ) +
+        
+        ylab("Response")  +
+        xlab("Visit")  
+      
+      # print(p1 + #labs(y="Response", x = "Visit") +
+      #         ggtitle(paste0("Individual responses ",
+      #                        length(unique(dplot$ID)),
+      # " patients & modelled mean response with 95% CI from GLS model shown in black\nNumber of patient values at each time point") )
+      # )
+      
+      
+      px <- p1 + labs(title = paste0("Individual responses ",
+                                     length(unique(dplot$ID)),
+                                     " patients & modelled mean response with 95% CI from GLS model shown in black\nNumber of patient values at each time point. Adjusting for baseline version of response."),
+                      #subtitle = "Plot of length by dose",
+                      caption = paste0("Adjusted for baseline (visit 1) , baseline= ",p2(adjustment),"")
+      )
+      
+      print(px)
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+     }
 
     
     
     
     
-    
+    })
     
     
     
