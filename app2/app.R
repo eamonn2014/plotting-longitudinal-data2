@@ -1902,12 +1902,25 @@ server <- shinyServer(function(input, output   ) {
       #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       zx <- z <- Predict(f1, x , baseline=adjustment, fun=exp) # we can exp automatically
       
-     # names(z) <- c("Visit","Baseline value at which we adjust","Estimate","Lower","Upper")
       z$baseline <- NULL  # drop this
       z<-data.frame(z )
-      
       harrell <- z   # save objects
       z<-data.frame(z )
+      
+      ## make a copy for table
+      names(zx) <- c("Visit","Baseline value at which we adjust","Estimate","Lower","Upper")
+      zx<-data.frame(zx )
+      
+        
+      
+      
+      
+      
+      
+      
+      
+      
+      
       
       df <- dat
       df$y <- log(df$value)
@@ -1925,18 +1938,21 @@ server <- shinyServer(function(input, output   ) {
                      df, na.action=na.omit) , 
                  error=function(e) e)
       
-      (z0 <- Predict(harrell0,x,    fun=exp)) # we can exp automatically
-    #  names(z0) <- c("Visit","Estimate","Lower","Upper")
+      (zoz<- z0 <- Predict(harrell0,x,    fun=exp)) # we can exp automatically
+      names(zoz) <- c("Visit","Estimate","Lower","Upper")
       z0 <-data.frame(z0 )
+      zoz <-data.frame(zoz )  # copy for table
       
-      return(list(mdata=mdata , z=z, harrell= harrell, f1=f1, z0=z0, harrell0=harrell0, zx=zx))
+      
+      
+      return(list(mdata=mdata , z=z, harrell= harrell, f1=f1, z0=z0, harrell0=harrell0, zx=zx, zoz=zoz))
       
     })
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
     output$z <- renderPrint({
       
-      summary <- tabby4()$z
+      summary <- tabby4()$zx
       return(print(summary, row.names=FALSE))
       
     })    
@@ -1950,7 +1966,7 @@ server <- shinyServer(function(input, output   ) {
     
     output$z0 <- renderPrint({
       
-      summary <- tabby4()$z0
+      summary <- tabby4()$zoz
       return(print(summary, row.names=FALSE))
       
     })    
