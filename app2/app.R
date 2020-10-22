@@ -342,14 +342,32 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                               
                                            splitLayout(
                                              
+                                          
                                              tags$head(tags$style(HTML(".shiny-split-layout > div {overflow: visible;}"))),
-                                             cellWidths = c("0%","50%", "50%"), # note the 0% here at position zero...
+                                             cellWidths = c("0%","33%", "33%","33%"), # note the 0% here at position zero...
                                              
-                                             textInput("adjust2", div(h5(tags$span(style="color:blue", "Adjust regression to baseline quantile:"))), value= ".5"),
                                              
-                                             textInput("reflevel", div(h5(tags$span(style="color:blue", "Visit reference level"))), value= "5")
+                                          
+                                             
+                                             textInput("adjust2", div(h5(tags$span(style="color:blue", "Adjust regression to baseline quantile:"))), value= ".5",width = '100%'),
+                                             
+                                             textInput("reflevel", div(h5(tags$span(style="color:blue", "Visit reference level"))), value= "5",  width = '100%'),
+                                             
+                                             selectInput("cors", 
+                                                         div(h5(tags$span(style="color:blue", "Select correlation structure:"))),
+                                                         
+                                                         list("corSymm" = "corSymm",
+                                                              "corAR1" = "corAR1",
+                                                              "corCAR1" = "corCAR1",
+                                                              "corExp" = "corExp",
+                                                              "corLin" = "corLin",
+                                                              "corGaus" = "corGaus" ,
+                                                              "corSpher" = "corSpher"
+                                                         ), width = '100%', selected = "corSymm" )
+                                        
                                            ),
-                                             
+                                           
+                                           
                                            h4(strong("Table 9 Gls predictions at each visit, based on the default - median of the baseline version of response is the default, but we can change this, top left box.")),
                                            div(class="span7", verbatimTextOutput("zx")),
                                           
@@ -1818,7 +1836,15 @@ server <- shinyServer(function(input, output   ) {
     # start on new tab adjusting for baseline
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
-    tabby4 <- reactive({
+    tabby4 <- reactive({  # tab 4
+        
+      R <-  input$cors
+       
+      cpk <- list("corSymm", "corAR1", "corCAR1", "corExp", "corLin", "corGaus","corSpher") 
+   
+      k <-  as.numeric(match(R, cpk))
+      
+      cp <- list(corSymm, corAR1, corCAR1, corExp, corLin, corGaus, corSpher) 
       
       data <- make.data() # call in data
       dat <- data$d
@@ -1852,7 +1878,7 @@ server <- shinyServer(function(input, output   ) {
       
       # run the baseline adjusted model, no centering yet
       f1  <-  tryCatch(Gls(y ~ x  + baseline ,
-                           correlation=corSymm(form=~ as.numeric(x)|g), 
+                           correlation=cp[[k]](form=~ as.numeric(x)|g), 
                            weights=varIdent(form=~1|x),
                            mdata, na.action=na.omit) , 
                        error=function(e) e)
@@ -1875,7 +1901,7 @@ server <- shinyServer(function(input, output   ) {
       
       harrell0 <-  
         tryCatch(Gls(y ~ x  ,  # +0 does not work with Harrell's Gls
-                     correlation=corSymm(form=~ as.numeric(x)|id),   # corAR1
+                     correlation=cp[[k]](form=~ as.numeric(x)|id),   # corAR1
                      weights=varIdent(form=~1|x),
                      df, na.action=na.omit) , 
                  error=function(e) e)
@@ -2233,7 +2259,16 @@ server <- shinyServer(function(input, output   ) {
     
     tabby5 <- reactive({
       
-     
+      R <-  input$cors
+      
+      cpk <- list("corSymm", "corAR1", "corCAR1", "corExp", "corLin", "corGaus","corSpher") 
+      
+      k <- NULL
+      k <-  as.numeric(match(R, cpk))
+      
+      cp <- list(corSymm, corAR1, corCAR1, corExp, corLin, corGaus, corSpher) 
+      
+      #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##
       
       mdata <- tabby4()$mdata # wide data
       
@@ -2269,10 +2304,7 @@ server <- shinyServer(function(input, output   ) {
    
       
                                   # log the response
-      
-      cp <- list(corSymm, corAR1, corCAR1, corExp, corLin, corGaus,corSpher) 
-      k=1  # if you use say corAR1 the approach below wont work!!
-      
+  
       
       reference <-  
         tryCatch(Gls(y ~ x  + baseline,
