@@ -235,52 +235,22 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                                              The estimates should be similar to those in selection '1 Means calculated on untransformed data', and Table 1")), 
                                            ) ,
                                            #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                                  tabPanel("Plotting longitudinal data, playing with the plots",  
-                                           
-                                           splitLayout(
-                                             
-                                             # selectInput("Design",
-                                             #             div(h5(tags$span(style="color:blue", "Select background colour:"))),
-                                             #             choices=c(  plot.backgroundG ), width='100%',
-                                             #             selected = "white"),
-                                             
-                                             textInput("v1", div(h5(tags$span(style="color:blue", "Line size: 0.1 -> "))), value= ".2"),
-                                             textInput("v2", div(h5(tags$span(style="color:blue", "Line boldness: 0-1"))), value= ".8"),
-                                             textInput("v3", div(h5(tags$span(style="color:blue", "Colour reverse: 1,-1"))), value= "1")
-                                              
-                                             # selectInput("Design",
-                                             #             div(h5(tags$span(style="color:blue", "Select background colour:"))),
-                                             #             choices=c(  plot.backgroundG ), width='22%',
-                                             #             selected = "white")
-                                             
-                                           ),
-                                           
-                                           selectInput("Design",
-                                                       div(h5(tags$span(style="color:blue", "Select background colour:"))),
-                                                       choices=c(  plot.backgroundG ), width='22%',
-                                                       selected = "white"),
-
-                                           
-                                           plotOutput("reg.plot2"),
-                                           h4(strong("Figure 1. Refer to the plot selection option for a description of the presentation")),
-                                           
-                                           div(class="span7", verbatimTextOutput("reg.summary5a")),
-                                           h4(strong("Table 1 Summary statistics, untransformed data")),
-                                           
-                                           div(class="span7", verbatimTextOutput("reg.summary3a")),
-                                          h4(strong("Table 2 Log transformation, calculate summary statistics then back transform (exponentiate)")),
-                                               
-                                          div(class="span7", verbatimTextOutput("reg.summary4a")),
-                                          h4(strong("Table 3 GLS model fit to natural logged data, the GLS model estimates and 95% CI are then exponentiated")),
-                                          
-                                          div(class="span7", verbatimTextOutput("reg.summary6a")),
-                                          h4(strong("Table 4 LMM model fit to natural logged data, the LMM model estimates and 95% CI are then exponentiated")),
-                                           
-                                           
-                                   ) ,
+                               
                                   
                                   
                                   tabPanel("Adjust for baseline, intervention after baseline", 
+                                           
+                                           h4("
+                                              The tables below are from a model adjusting for baseline version of the response.
+                                              In Table 8 we present predictions from rms::Predict. I have defaulted to the the 
+                                              median baseline. This is the median of the log baseline (this is not calculated 
+                                              from the wide dataset where there is a baseline variable, so we avoid double counting 
+                                              in the calculation). The default predictions from rms::Predict also adjust for the median baseline, 
+                                              but using the wide dataset! This is not a problem as the value is presented but may not be what you 
+                                              think it is. Enter the percentile you are interested in, use the top left box. 
+                                              The predictions in Table 8 are exponentiated. 
+
+                                              "),
                                            
                                            splitLayout(
                                                        
@@ -290,33 +260,33 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                              textInput("adjust", div(h5(tags$span(style="color:blue", "Adjust regression to baseline quantile:"))), value= ".5"),
                                              
                                              selectInput("zplot", div(h5(tags$span(style="color:blue", "Select a plot/estimation approach:"))),
-                                                         list("1 Log data, obtain GLS model estimates, log scale plot" = "zzplot1",
+                                                         list("1 Log data, exponentiate the GLS model estimates (model in Table 11, estimates in Table 10), log scale plot" = "zzplot1",
                                                               "2 Different approaches together, plotted on untransformed scale" = "zzplot2",
                                                               "3 Different approaches together, plus raw data, plotted on log transformed scale" = "zzplot3",
                                                               "4 Log data, obtain GLS model estimates adjusted for baseline version of response, log scale plot" = "zzplot4"
                                                               
-                                                         ), width = 700 )### EDIT HERE)
+                                                         ), width = 7500 )### EDIT HERE)
                                              
                                              
                                              ),
                                  
                                           plotOutput("PLOT1"),
                                           
-                                          h4(strong("Table 5 GLS Model estimates adjusting for baseline version of response, exponentiated")),
+                                          h4(strong("Table 8 GLS Model predictions adjusting for (logged) baseline version of response , exponentiated")),
                                           div(class="span7", verbatimTextOutput("z")),
-                                          h4(strong("Table 6 GLS Model adjusting for baseline version of response")),
+                                          h4(strong("Table 9 GLS Model adjusting for baseline version of response, Table 8 is derivded from this model.")),
                                           div(class="span7", verbatimTextOutput("f1")),
                                           
-                                          h4(strong("Table 7 GLS Model estimates not adjusting for baseline version of response, exponentiated")),
+                                          h4(strong("Table 10 GLS Model predictions not adjusting for baseline version of response, exponentiated")),
                                           div(class="span7", verbatimTextOutput("z0")),
-                                          h4(strong("Table 8 GLS Model not adjusting for baseline")),
+                                          h4(strong("Table 11 GLS Model not adjusting for baseline")),
                                           div(class="span7", verbatimTextOutput("harrell0")),
                                           
                                         
                                            
                                    ),
                                   
-                                  tabPanel("Predictions", 
+                                  tabPanel("Predict estimates while adjusting for baseline", 
                                            h4(p("The idea here is to show how to reproduce the rms::Predict function's estimates for each timepoint by using a
                                            regression table in a model that has a baseline version of the response. Imagine a scenario in which an intervention is administered after baseline is measured. 
                                            First we run the regression model with no centering of the baseline version of the response and get the predictions for each visit adjusted
@@ -380,7 +350,51 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                            
                                            
                                            
-                                  )
+                                  ),
+                                  
+                                  tabPanel("Playing with the plots",  
+                                           
+                                           splitLayout(
+                                             
+                                             # selectInput("Design",
+                                             #             div(h5(tags$span(style="color:blue", "Select background colour:"))),
+                                             #             choices=c(  plot.backgroundG ), width='100%',
+                                             #             selected = "white"),
+                                             
+                                             textInput("v1", div(h5(tags$span(style="color:blue", "Line size: 0.1 -> "))), value= ".2"),
+                                             textInput("v2", div(h5(tags$span(style="color:blue", "Line boldness: 0-1"))), value= ".8"),
+                                             textInput("v3", div(h5(tags$span(style="color:blue", "Colour reverse: 1,-1"))), value= "1")
+                                             
+                                             # selectInput("Design",
+                                             #             div(h5(tags$span(style="color:blue", "Select background colour:"))),
+                                             #             choices=c(  plot.backgroundG ), width='22%',
+                                             #             selected = "white")
+                                             
+                                           ),
+                                           
+                                           selectInput("Design",
+                                                       div(h5(tags$span(style="color:blue", "Select background colour:"))),
+                                                       choices=c(  plot.backgroundG ), width='22%',
+                                                       selected = "white"),
+                                           
+                                           
+                                           plotOutput("reg.plot2"),
+                                           h4(strong("Figure 1. Refer to the plot selection option for a description of the presentation")),
+                                           
+                                           div(class="span7", verbatimTextOutput("reg.summary5a")),
+                                           h4(strong("Table 1 Summary statistics, untransformed data")),
+                                           
+                                           div(class="span7", verbatimTextOutput("reg.summary3a")),
+                                           h4(strong("Table 2 Log transformation, calculate summary statistics then back transform (exponentiate)")),
+                                           
+                                           div(class="span7", verbatimTextOutput("reg.summary4a")),
+                                           h4(strong("Table 3 GLS model fit to natural logged data, the GLS model estimates and 95% CI are then exponentiated")),
+                                           
+                                           div(class="span7", verbatimTextOutput("reg.summary6a")),
+                                           h4(strong("Table 4 LMM model fit to natural logged data, the LMM model estimates and 95% CI are then exponentiated")),
+                                           
+                                           
+                                  ) 
                                   
                                            #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                   
@@ -1836,7 +1850,7 @@ server <- shinyServer(function(input, output   ) {
     # start on new tab adjusting for baseline
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
-    tabby4 <- reactive({  # tab 4
+    tabby4 <- reactive({  
         
       R <-  input$cors
        
@@ -1886,9 +1900,14 @@ server <- shinyServer(function(input, output   ) {
       #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       #  PREDICT ON FRANK HARRELL,WE CAN EXPONENTIATE IN THE FUNCTION !
       #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      z <- Predict(f1, x , baseline=adjustment, fun=exp) # we can exp automatically
+      zx <- z <- Predict(f1, x , baseline=adjustment, fun=exp) # we can exp automatically
+      
+     # names(z) <- c("Visit","Baseline value at which we adjust","Estimate","Lower","Upper")
       z$baseline <- NULL  # drop this
+      z<-data.frame(z )
+      
       harrell <- z   # save objects
+      z<-data.frame(z )
       
       df <- dat
       df$y <- log(df$value)
@@ -1907,10 +1926,10 @@ server <- shinyServer(function(input, output   ) {
                  error=function(e) e)
       
       (z0 <- Predict(harrell0,x,    fun=exp)) # we can exp automatically
+    #  names(z0) <- c("Visit","Estimate","Lower","Upper")
+      z0 <-data.frame(z0 )
       
-      
-      
-      return(list(mdata=mdata , z=z, harrell= harrell, f1=f1, z0=z0, harrell0=harrell0))
+      return(list(mdata=mdata , z=z, harrell= harrell, f1=f1, z0=z0, harrell0=harrell0, zx=zx))
       
     })
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1918,7 +1937,7 @@ server <- shinyServer(function(input, output   ) {
     output$z <- renderPrint({
       
       summary <- tabby4()$z
-      return(list(summary))
+      return(print(summary, row.names=FALSE))
       
     })    
     
@@ -1932,7 +1951,7 @@ server <- shinyServer(function(input, output   ) {
     output$z0 <- renderPrint({
       
       summary <- tabby4()$z0
-      return(list(summary))
+      return(print(summary, row.names=FALSE))
       
     })    
     
@@ -1957,7 +1976,7 @@ server <- shinyServer(function(input, output   ) {
       names(z0) <- c("Visit", "Estimate",   "Lower", "Upper")
       z0$Visit <- as.numeric(as.character(z0$Visit))
 
-      z <- K$z
+      z <- K$z 
       z <- as.data.frame(z)
       names(z) <- c("Visit", "Estimate",   "Lower", "Upper")
       z$Visit <- as.numeric(as.character(z$Visit))
@@ -2050,9 +2069,10 @@ server <- shinyServer(function(input, output   ) {
       } else  if (input$zplot == "zzplot2") {
 
         z0 <- tabby4()$z0
-        z <- tabby4()$z
+        z <- tabby4()$z ###################################
         z0 <- as.data.frame(z0)
         z <- as.data.frame(z)
+        #z[,2] <- NULL  # drop this to allow binding
         
         emus <- dfs[,c(1,2,7,8)]
         names(emus) <- names(z0)
@@ -2218,7 +2238,7 @@ server <- shinyServer(function(input, output   ) {
         # scale_x_continuous(breaks = c(unique(df$VISIT)),
         #                    c(unique(df$VISIT))) +   # labels = comma) + #
         
-        EnvStats::stat_n_text(size = 4, y.pos = max(log(dplot$value), na.rm=T)*1.1 ,
+        EnvStats::stat_n_text(size = 4, y.pos = max(log(dp$value), na.rm=T)*1.1 ,
                               y.expand.factor=0,  angle = 0, hjust = .5, family = "mono", fontface = "plain") +#295 bold
         
         
@@ -2242,7 +2262,7 @@ server <- shinyServer(function(input, output   ) {
         xlab("Visit")  
       
       px <- p1 + labs(title = paste0("Individual responses ",
-                                     length(unique(dplot$ID)),
+                                     length(unique(dp$ID)),
                                      " patients & modelled mean response with 95% CI from GLS model shown in black\nNumber of patient values at each time point. Adjusting for baseline version of response."),
                       #subtitle = "Plot of length by dose",
                       caption = paste0("Adjusted for baseline (visit 1) , baseline= ",p2(adjustment),"")
