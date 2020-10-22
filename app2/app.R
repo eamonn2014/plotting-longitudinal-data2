@@ -191,6 +191,12 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                       # 
                                       tags$a(href = "https://hbiostat.org/bbr/md/serial.html#fn4", "[1] Serial Data Frank Harrell"),
                                       div(p(" ")),
+                                      tags$a(href = "https://stats.stackexchange.com/questions/167361/simultaneous-tests-for-general-linear-hypothesis-question", "[2] Frank Harrell on the SAS LSMean horror"),
+                                      div(p(" ")),
+                                      
+                                      
+                                      
+                                      
  
                                   )
                                   
@@ -260,14 +266,14 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                               in the calculation). The default predictions from rms::Predict also adjust for the median baseline, 
                                               but using the wide dataset! This is not a problem as the value is presented but may not be what you 
                                               think it is. Enter the percentile you are interested in, use the top left box. 
-                                              The predictions in Table 8 are exponentiated. 
+                                              The predictions in Table 8 are exponentiated. The adjusted estimate plot will alter based on upper left input.
 
                                               "),
                                            
                                            splitLayout(
                                                        
                                                      tags$head(tags$style(HTML(".shiny-split-layout > div {overflow: visible;}"))),
-                                                     cellWidths = c("0%","40%", "60%"), # note the 0% here at position zero...
+                                                     cellWidths = c("0%","30%", "70%"), # note the 0% here at position zero...
                                                        
                                              textInput("adjust", div(h5(tags$span(style="color:blue", "Adjust regression to baseline quantile:"))), value= ".5"),
                                              
