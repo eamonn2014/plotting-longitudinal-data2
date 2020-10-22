@@ -315,7 +315,29 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                    ),
                                   
                                   tabPanel("Predictions", 
+                                           h4(p("The idea here is to show how to reproduce the rms::Predict function's estimates for each timepoint by using a
+                                           regression table in a model that has a baseline version of the response. Imagine a scenario in which an intervention is administered after baseline is measured. 
+                                           First we run the regression model with no centering of the baseline version of the response and get the predictions for each visit adjusted
+                                           for the baseline version of the response (Table 9). This defaults to the median in rms::Predict. We then try to reproduce this. 
+                                           Typically the intercept of a regression has an interpretation of the effect when all other variables are zero.
+                                           So we need to center the baseline variable, so that the median is at zero. To do this we subtract the median value and fit the model.
+                                           Therefore zero baseline is actually the median. Now we have a method to find each visit estimate, we run the model and relevel (change the 'Visit reference level' input
+                                           to find the
+                                           effect at each visit). Our results are shown in Table 10. Check the intercept in Table 10 and compare it to the 'Visit reference level' 
+                                           chosen visit's estimate in Table 9.
                                            
+                                           This will work for CorSymm (unstructured) but wil be off for other structures.
+                      
+                                           
+                                           ")),
+                                           
+                                           h4(p("As an aside, it is important to take care calculating the percentile value of the baseline when centering.
+                                           If you use the wide dataset you will double count. So if you want to adjust to the median value of the baseline,
+                                           use the long version of the variable and calculate the median for the baseline visit, and use that value.
+                      
+                                           
+                                           ")),
+                                              
                                            splitLayout(
                                              
                                              tags$head(tags$style(HTML(".shiny-split-layout > div {overflow: visible;}"))),
@@ -326,12 +348,12 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                              textInput("reflevel", div(h5(tags$span(style="color:blue", "Visit reference level"))), value= "5")
                                            ),
                                              
-                                           h4(strong("Table 9 Gls predictions at each visit")),
+                                           h4(strong("Table 9 Gls predictions at each visit, based on the default - median of the baseline version of response is the default, but we can change this, top left box.")),
                                            div(class="span7", verbatimTextOutput("zx")),
                                           
-                                           h4(strong("Table 10 GLS Model exponentiated coefficients")),
+                                           h4(strong("Table 10 Gls model exponentiated coefficients, based on the baseline version of response centered according to user input and chosen reference level, compare intercept to selected visit in Table 9.")),
                                            div(class="span7", verbatimTextOutput("mcoefx")),
-                                           h4(strong("Table 11 GLS Model")),
+                                           h4(strong("Table 11 Gls Model")),
                                            div(class="span7", verbatimTextOutput("fit.resx"))
                                              
                                            
@@ -2080,6 +2102,9 @@ server <- shinyServer(function(input, output   ) {
       
       dd$x <- (as.numeric(dd$x))
       
+      # The errorbars overlapped, so use position_dodge to move them horizontally
+      pd <- position_dodge(0.4) # move them .05 to the left and right
+      
       pd1 <- ggplot(dd, aes(x= x, y=yhat, colour=Approach)) + 
         geom_errorbar(aes(ymin=lower, ymax=upper), width=.1, position=pd) +
         geom_line(position=pd) +
@@ -2133,6 +2158,7 @@ server <- shinyServer(function(input, output   ) {
       
       library(scales)
       
+      adjustment  <- tabby4()$adjustment
       z <- tabby4()$z
       zz<- as.data.frame(z)
       
@@ -2256,7 +2282,8 @@ server <- shinyServer(function(input, output   ) {
       
       z2 <- Predict(reference, x ,  baseline=  median( df[df$VISIT==1 , "value"] )
                       , fun=exp) # defaults to median baseline as the adjustment
-  
+      z2 <- Predict(reference, x ,  baseline=  adjustment
+                    , fun=exp) # defaults to median baseline as the adjustment
       
       # now we relevel
       mdata$x <- relevel(mdata$x, ref= input$reflevel)   ##new
