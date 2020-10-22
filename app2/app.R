@@ -1,34 +1,35 @@
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Rshiny ideas from on https://gallery.shinyapps.io/multi_regression/
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-rm(list=ls())
-set.seed(2345)
-library(mvtnorm) 
-library(rms)
-library(ggplot2)
-library(shiny) 
-library(nlme)
-library(MASS)
-library(tidyverse)
-library(shinyWidgets)
-library(lme4)
-library(DT)
-library("shinyalert")
-
-options(max.print=1000000)
-fig.width <- 1300
-fig.height <- 550
-fig.height2 <- 450
-library(shinythemes)        # more funky looking apps
-p1 <- function(x) {formatC(x, format="f", digits=1)}
-p2 <- function(x) {formatC(x, format="f", digits=2)}
-options(width=100)
-
-v4=90
-plot.backgroundG <- colors()
-
-# function to create longitudinal data
-is.even <- function(x){ x %% 2 == 0 }
+    rm(list=ls())
+    set.seed(2345)
+    library(mvtnorm) 
+    library(rms)
+    library(ggplot2)
+    library(shiny) 
+    library(nlme)
+    library(MASS)
+    library(tidyverse)
+    library(shinyWidgets)
+    library(lme4)
+    library(DT)
+    library("shinyalert")
+    
+    options(max.print=1000000)
+    fig.width <- 1300
+    fig.height <- 550
+    fig.height2 <- 450
+    library(shinythemes)        # more funky looking apps
+    p1 <- function(x) {formatC(x, format="f", digits=1)}
+    p2 <- function(x) {formatC(x, format="f", digits=2)}
+    p4 <- function(x) {formatC(x, format="f", digits=4)}
+    options(width=100)
+    
+    v4=90
+    plot.backgroundG <- colors()
+    
+    # function to create longitudinal data
+    is.even <- function(x){ x %% 2 == 0 }
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -45,23 +46,26 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                 
                 h4(p("A laboratory measurment is taken on patients over time. 
                 Within visit windows the times at which the measurement is grouped for all patients into common visits. 
-                The initial analyses assume there is no intervention after baseline, so we will not be treating baseline as a covariate. 
-                The last two tabs show the scenario adjusting the visit estimates using the baseline version of the response as a covariate.
+                The initial analyses assume there is no intervention after baseline, so we will begin by not treating baseline as a covariate. 
+                Tabs 3 & 4 present the scenario adjusting the visit estimates using the baseline version of the response as a covariate.
                 We simulate data that has a skewed distribution. Many laboratory measurments have skewed distibutions as analyte amounts cannot be negative.
                         We describe the average
                       trend using simple summary statistics, log transform the data and calculate summary statistics followed by 
                       exponentiating back, we also fit a generalized least squares (GLS) model to the log transformed data
-                      (using an autocorrelation structure of order 1 as we simulate AR(1)) to account for the fact patients are 
+                       to account for the fact patients are 
                       followed over time, finally back transforming the model estimates. We also fit a linear mixed model (LMM) to the data. Note summary statistics approaches ignore the 
-                      longitudinal nature of the data. It cannot be emphasized enough, always plot the data.")),
+                      longitudinal nature of the data. It cannot be emphasized enough to always plot the data.")),
             
-                h4(p("The natural log transformation is used throughout. By anti-logging predictions from a model assuming a normal distribution on the logged values this will result in estimates of the median response. The first plot selection '1 Means calculated on untransformed data',
+                h4(p("The natural log transformation is used throughout. By anti-logging predictions from a model assuming a normal distribution on the logged values this will result in estimates of the median response. 
+                In the case of tab 1, the first plot selection '1 Means calculated on untransformed data'
 
 
                 is a plot of the raw data presenting at each timepoint arithmetic means and 95%CIs. We can see heavily skewed data and that this plot is not very illuminating. 
                  The next plot '1a Means calculated on untransformed data, antilog presentation' presents the same arithmetic mean and 95%CIs 
-                 as the previous plot. But here the data are 
-                 log transformed. Note the means and CIs are calculated on the untransformed data, 
+                 as the previous plot. But here the data are log transformed. 
+                 
+                 
+                 Note the means and CIs are calculated on the untransformed data, 
                  then logged for presentation with antilog y tick values. This is not recommended 
                  but serves to show the untransformed arithmetic means more clearly presented than the first plot. 
                  Skip over '2 Medians calculated on untransformed data' which is not very illuminating.
@@ -75,7 +79,8 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                     First the data is logged, the model then fitted and the estimates then exponentiated. 
                     For presentation 
                     log the data, estimates and confidence bounds, plot and replace the y axis ticks with antilogs. 
-                    The 6th selection shows a comparison of the approaches and the 7th selection diagnostics from the GLS model fit.  
+                    The 6th selection shows a comparison of the approaches and the 7th selection diagnostics from the GLS model fit.   
+                   
                     
                      ")),
                 
@@ -83,7 +88,9 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                 h4(p("
                 Note the inputs simulate the data for the analyses and the final simulated response is exponentiated. 
                      The second tab is for interest, we run linear mixed models on the simulated response  
-                     and on the exponentiated simulated response. The third tab is just for fun, the first tab is repeated 
+                     and on the exponentiated simulated response.  
+                     Tabs 3 and 4 fit Gls models that treat baseline as a covariate. More explanation can be found on each tab.
+                     The last tab is just for fun, the first tab is repeated 
                      however here you can play around with inputs to adjust the plots.")),
                 
                 shinyUI(pageWithSidebar(
@@ -95,14 +102,19 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                   div(
                                       actionButton(inputId='ab1', label="Shiny",   icon = icon("th"), 
                                                    onclick ="window.open('https://raw.githubusercontent.com/eamonn2014/plotting-longitudinal-data2/master/app2/app.R', '_blank')"),   
-                                      actionButton(inputId='ab1', label="R code",   icon = icon("th"), 
+                                      actionButton(inputId='ab1', label="Rcode 1",   icon = icon("th"), 
+                                                   
+                                                   
+                                                   onclick ="window.open('https://raw.githubusercontent.com/eamonn2014/plotting-longitudinal-data2/master/gls%20one%20arm%20estimation.R', '_blank')"),   
+                                      actionButton(inputId='ab1', label="Rcode 2",   icon = icon("th"), 
+                                                   
                                                    onclick ="window.open('https://raw.githubusercontent.com/eamonn2014/plotting-longitudinal-data2/master/plotting-longitudinal-data.R', '_blank')"),   
-                                      actionButton("resample", "Simulate a new sample"),
+                                      actionButton("resample", "Simulate"),
                                       br(), br(),
                                       tags$style(".well {background-color:#b6aebd ;}"), 
                                       
                                       div(h5(tags$span(style="color:blue", "Play around with the parameters that generate 
-                                                       data using the sliders below. Hit simulate for another sample. Hit the other two buttons to see the code."))),
+                                                       data using the sliders below. Hit simulate for another sample. Hit the other buttons to see the code."))),
                                       tags$head(
                                           tags$style(HTML('#ab1{background-color:orange}'))
                                       ),
@@ -203,7 +215,7 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
      
                    ")), 
                                   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~end of section to add colour     
-                                  tabPanel("Plotting & estimating", 
+                                  tabPanel("1 Plotting & estimating", 
                                            
                                            #h4(strong("Plot the data. Always plot the data.")),
                                            plotOutput("reg.plot"),
@@ -224,7 +236,7 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                                h4(strong("Table 4 LMM model fit to natural logged data, the LMM model estimates and 95% CI are then exponentiated")),
                                            ),
                                            #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                                           tabPanel("LMMs fitted to simulated data", value=3, 
+                                  tabPanel("2 LMMs fitted to simulated data", value=3, 
                                                     
                                                     div(class="span7", verbatimTextOutput("reg.summary8")),
                                                     h4(paste("Table 5. LMM on simulated data, numeric time variable.")), 
@@ -238,7 +250,7 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                
                                   
                                   
-                                  tabPanel("Adjust for baseline, intervention after baseline", 
+                                  tabPanel("3 Adjust for baseline, intervention after baseline", 
                                            
                                            h4("
                                               The tables below are from a model adjusting for baseline version of the response.
@@ -263,7 +275,7 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                                          list("1 Log data, exponentiate the GLS model estimates (model in Table 11, estimates in Table 10), log scale plot" = "zzplot1",
                                                               "2 Different approaches together, plotted on untransformed scale" = "zzplot2",
                                                               "3 Different approaches together, plus raw data, plotted on log transformed scale" = "zzplot3",
-                                                              "4 Log data, obtain GLS model estimates adjusted for baseline version of response, log scale plot" = "zzplot4"
+                                                              "4 Log data, exp. GLS model estimates adjusted for baseline version of response (model in Table 9, estimates Table 8), log scale plot" = "zzplot4"
                                                               
                                                          ), width = 7500 )### EDIT HERE)
                                              
@@ -286,19 +298,20 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                            
                                    ),
                                   
-                                  tabPanel("Predict estimates while adjusting for baseline", 
+                                  tabPanel("4 Predict estimates while adj. for baseline", 
                                            h4(p("The idea here is to show how to reproduce the rms::Predict function's estimates for each timepoint by using a
                                            regression table in a model that has a baseline version of the response. Imagine a scenario in which an intervention is administered after baseline is measured. 
                                            First we run the regression model with no centering of the baseline version of the response and get the predictions for each visit adjusted
-                                           for the baseline version of the response (Table 9). This defaults to the median in rms::Predict. We then try to reproduce this. 
+                                           for the baseline version of the response (Table 12). This defaults to the median in rms::Predict. We then try to reproduce this. 
                                            Typically the intercept of a regression has an interpretation of the effect when all other variables are zero.
                                            So we need to center the baseline variable, so that the median is at zero. To do this we subtract the median value and fit the model.
-                                           Therefore zero baseline is actually the median. Now we have a method to find each visit estimate, we run the model and relevel (change the 'Visit reference level' input
+                                           Therefore zero baseline is actually the median. Now we have a method to find each visit estimate, we run the model and relevel
+                                           (change the 'Visit reference level' input
                                            to find the
-                                           effect at each visit). Our results are shown in Table 10. Check the intercept in Table 10 and compare it to the 'Visit reference level' 
-                                           chosen visit's estimate in Table 9.
+                                           effect at each visit). Our results are shown in Table 13. Check the intercept in Table 13 and compare it to the 'Visit reference level' 
+                                           chosen visit's estimate in Table 12.
                                            
-                                           This will work for CorSymm (unstructured) but wil be off for other structures.
+                                           This will work for corSymm (unstructured) but wil be off for other structures.
                       
                                            
                                            ")),
@@ -338,21 +351,17 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                            ),
                                            
                                            
-                                           h4(strong("Table 9 Gls predictions at each visit, based on the default - median of the baseline version of response is the default, but we can change this, top left box.")),
+                                           h4(strong("Table 12 Gls predictions at each visit, based on the default - median of the baseline version of response is the default, but we can change this, top left box.")),
                                            div(class="span7", verbatimTextOutput("zx")),
                                           
-                                           h4(strong("Table 10 Gls model exponentiated coefficients, based on the baseline version of response centered according to user input and chosen reference level, compare intercept to selected visit in Table 9.")),
+                                           h4(strong("Table 13 Gls model exponentiated coefficients, based on the baseline version of response centered according to user input and chosen reference level, compare intercept to selected visit estimate in Table 12.")),
                                            div(class="span7", verbatimTextOutput("mcoefx")),
-                                           h4(strong("Table 11 Gls Model")),
+                                           h4(strong("Table 14 Gls Model with the new variable 'base' that is 'centered' according to the user input, default is median")),
                                            div(class="span7", verbatimTextOutput("fit.resx"))
                                              
-                                           
-                                           
-                                           
-                                           
-                                  ),
+                                           ),
                                   
-                                  tabPanel("Playing with the plots",  
+                                  tabPanel("6 Toying with plots",  
                                            
                                            splitLayout(
                                              
@@ -1945,7 +1954,7 @@ server <- shinyServer(function(input, output   ) {
       
       
       
-      return(list(mdata=mdata , z=z, harrell= harrell, f1=f1, z0=z0, harrell0=harrell0, zx=zx, zoz=zoz))
+      return(list(mdata=mdata , z=z, harrell= harrell, f1=f1, z0=z0, harrell0=harrell0, zx=zx, zoz=zoz, adjustment=adjustment))
       
     })
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -2266,13 +2275,19 @@ server <- shinyServer(function(input, output   ) {
               plot.title=element_text(), plot.margin = unit(c(5.5,12,5.5,5.5), "pt"),
               legend.text=element_text(size=12),
               legend.title=element_text(size=14),
-              axis.text.x  = element_text(size=10),
-              axis.text.y  = element_text(size=10),
+              axis.text.x  = element_text(size=12),
+              axis.text.y  = element_text(size=12),
               axis.line.x = element_line(color="black"),
               axis.line.y = element_line(color="black"),
-              plot.caption=element_text(hjust = 0, size = 7),
+              plot.caption=element_text(hjust = 0, size = 11),
               axis.title = element_text()
         ) +
+        
+        # p + theme(
+        #   plot.title = element_text(color = "red", size = 12, face = "bold"),
+        #   plot.subtitle = element_text(color = "blue"),
+        #   plot.caption = element_text(color = "green", face = "italic")
+        # )
         
         ylab("Response")  +
         xlab("Visit")  
@@ -2281,7 +2296,7 @@ server <- shinyServer(function(input, output   ) {
                                      length(unique(dp$ID)),
                                      " patients & modelled mean response with 95% CI from GLS model shown in black\nNumber of patient values at each time point. Adjusting for baseline version of response."),
                       #subtitle = "Plot of length by dose",
-                      caption = paste0("Adjusted for baseline (visit 1) , baseline= ",p2(adjustment),"")
+                      caption = paste0("Adjusted for baseline (visit 1) , baseline= ",p4(adjustment),"")
       )
       
       print(px)
@@ -2313,9 +2328,8 @@ server <- shinyServer(function(input, output   ) {
       df <- dat                                                 
       df$value <- log(df$value)                                 # log the response
       
-      
-      A <- as.numeric(    eval(parse(text= (input$adjust2)) ) )  # pull in quantile from input box
-      # calculate in the long data set otherwise double counting will occur if using wide
+       A <- as.numeric(    eval(parse(text= (input$adjust2)) ) )  # pull in quantile from input box
+      # calculate in the long data set otherwise double counting will occur if using wide dataset
       adjustment <- quantile( df[df$VISIT==1 , "value"] , probs= A )
      
       
@@ -2333,15 +2347,13 @@ server <- shinyServer(function(input, output   ) {
       d$x <- factor(d$VISIT)
       d$g <- d$ID
       mdata  <- d
-      mdata$base <- mdata$baseline-adjustment
+      mdata$base <- mdata$baseline-adjustment  # new variable
       
       dd <- datadist(mdata)
       options(datadist='dd')
    
       
-                                  # log the response
-  
-      
+
       reference <-  
         tryCatch(Gls(y ~ x  + baseline,
                      correlation=cp[[k]](form=~ as.numeric(x)|g), 
@@ -2350,10 +2362,13 @@ server <- shinyServer(function(input, output   ) {
                  error=function(e) e)
       
       
-      z2 <- Predict(reference, x ,  baseline=  median( df[df$VISIT==1 , "value"] )
-                      , fun=exp) # defaults to median baseline as the adjustment
+      # z2 <- Predict(reference, x ,  baseline=  median( df[df$VISIT==1 , "value"] )
+      #                 , fun=exp) # defaults to median baseline as the adjustment
       z2 <- Predict(reference, x ,  baseline=  adjustment
                     , fun=exp) # defaults to median baseline as the adjustment
+      
+      ## make a copy for table
+      names(z2) <- c("Visit","Baseline value at which we adjust","Estimate","Lower","Upper")
       
       # now we relevel
       mdata$x <- relevel(mdata$x, ref= input$reflevel)   ##new
