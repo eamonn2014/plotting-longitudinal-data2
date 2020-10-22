@@ -44,7 +44,9 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                 h2("Plotting longitudinal data and estimating averages with the help of a natural log transformation"),
                 
                 h4(p("A laboratory measurment is taken on patients over time. 
-                Within visit windows the times at which the measurement is grouped for all patients into common visits. There is no intervention after baseline, so we will not be treating baseline as a covariate.
+                Within visit windows the times at which the measurement is grouped for all patients into common visits. 
+                The initial analyses assume there is no intervention after baseline, so we will not be treating baseline as a covariate. 
+                The last two tabs show the scenario adjusting the visit estimates using the baseline version of the response as a covariate.
                 We simulate data that has a skewed distribution. Many laboratory measurments have skewed distibutions as analyte amounts cannot be negative.
                         We describe the average
                       trend using simple summary statistics, log transform the data and calculate summary statistics followed by 
