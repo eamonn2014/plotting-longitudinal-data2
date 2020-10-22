@@ -189,14 +189,16 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                       
                                       div(p( strong("References:"))),  
                                       # 
-                                      tags$a(href = "https://hbiostat.org/bbr/md/serial.html#fn4", "[1] Serial Data Frank Harrell"),
+                                      tags$a(href = "https://hbiostat.org/bbr/md/serial.html#fn4", tags$span(style="color:blue", "[1] Serial Data Frank Harrell"),),
                                       div(p(" ")),
-                                      tags$a(href = "https://stats.stackexchange.com/questions/167361/simultaneous-tests-for-general-linear-hypothesis-question", "[2] Frank Harrell on the SAS LSMean horror"),
+                                      tags$a(href = "https://stats.stackexchange.com/questions/167361/simultaneous-tests-for-general-linear-hypothesis-question", tags$span(style="color:blue","[2] Frank Harrell on the SAS LSMeans horror"),),
                                       div(p(" ")),
+                                      tags$a(href = "https://markmail.org/message/dqpk6ftztpbzgekm", tags$span(style="color:blue","[3] Douglas Bates on the SAS LSMeans horror"),),
+                                      div(p(" ")),
+                                      tags$a(href = "http://julia-programming-language.2336112.n4.nabble.com/MixedModels-residuals-and-post-hocs-td42792.html", tags$span(style="color:blue","[4] More from Douglas Bates"),),
+                                      div(p(" "))
                                       
-                                      
-                                      
-                                      
+                                       
  
                                   )
                                   
