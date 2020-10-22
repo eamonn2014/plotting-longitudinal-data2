@@ -195,7 +195,7 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                       div(p(" ")),
                                       tags$a(href = "https://markmail.org/message/dqpk6ftztpbzgekm", tags$span(style="color:blue","[3] Douglas Bates on the SAS LSMeans horror"),),
                                       div(p(" ")),
-                                      tags$a(href = "http://julia-programming-language.2336112.n4.nabble.com/MixedModels-residuals-and-post-hocs-td42792.html", tags$span(style="color:blue","[4] More from Douglas Bates"),),
+                                      tags$a(href = "http://julia-programming-language.2336112.n4.nabble.com/MixedModels-residuals-and-post-hocs-td42792.html", tags$span(style="color:blue","[4] More from Douglas Bates"),),   
                                       div(p(" "))
                                       
                                        
