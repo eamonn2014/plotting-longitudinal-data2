@@ -292,14 +292,14 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                  
                                           plotOutput("PLOT1"),
                                           
-                                          h4(strong("Table 8 GLS Model predictions adjusting for (logged) baseline version of response , exponentiated")),
+                                          h4(strong("Table 8 GLS Model predictions adjusting for (logged) baseline version of response , exponentiated estimates")),
                                           div(class="span7", verbatimTextOutput("z")),
                                           h4(strong("Table 9 GLS Model adjusting for baseline version of response, Table 8 is derived from this model.")),
                                           div(class="span7", verbatimTextOutput("f1")),
                                           
-                                          h4(strong("Table 10 GLS Model predictions not adjusting for baseline version of response, exponentiated")),
+                                          h4(strong("Table 10 GLS Model predictions not adjusting for baseline version of response, exponentiated estimates")),
                                           div(class="span7", verbatimTextOutput("z0")),
-                                          h4(strong("Table 11 GLS Model not adjusting for baseline")),
+                                          h4(strong("Table 11 GLS Model not adjusting for baseline version of respons")),
                                           div(class="span7", verbatimTextOutput("harrell0")),
                                           
                                         
@@ -359,7 +359,7 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                            ),
                                            
                                            
-                                           h4(strong("Table 12 Gls predictions at each visit, based on the default - median of the baseline version of response is the default, but we can change this, top left box.")),
+                                           h4(strong("Table 12 Gls exponentiated predictions at each visit, based on the default - median of the (log) baseline version of response is the default, but we can change this, top left box.")),
                                            div(class="span7", verbatimTextOutput("zx")),
                                           
                                            h4(strong("Table 13 Gls model exponentiated coefficients, based on the baseline version of response centered according to user input and chosen reference level, compare intercept to selected visit estimate in Table 12.")),
