@@ -198,7 +198,7 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                       tags$a(href = "https://markmail.org/message/dqpk6ftztpbzgekm", tags$span(style="color:blue","[3] Douglas Bates on the SAS LSMeans horror"),),
                                       div(p(" ")),
                                       tags$a(href = "http://julia-programming-language.2336112.n4.nabble.com/MixedModels-residuals-and-post-hocs-td42792.html", tags$span(style="color:blue","[4] More from Douglas Bates"),),   
-                                      div(p(" "))
+                                      div(p(" ")),
                                       tags$a(href = "https://github.com/rinpharma/2020_presentations/blob/main/talks_folder/2020-Sabanes_Bove-Implementing_MMRM_in_R.pdf", tags$span(style="color:blue","[4] MMRM in R from R in pharma 2020"),),   
                                       div(p(" "))
                                       
