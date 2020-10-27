@@ -3,6 +3,7 @@
 # proving relevel 
 # predict and emmeans are equivalent with corSymm not AR1symm though be careful!
 # some nice plots along the way
+# lmer ref https://github.com/rinpharma/2020_presentations/blob/main/talks_folder/2020-Sabanes_Bove-Implementing_MMRM_in_R.pdf
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Rshiny ideas from on https://gallery.shinyapps.io/multi_regression/
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -649,7 +650,7 @@
   summary(fit.res)  # check to earlier model so data is correct, ANALYSED ON LOG y
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#  LOG Y AND CHECK MODEL IS THE SAME TO CONFIRM DATA
+#  LOG Y AND CHECK MODEL IS THE SAME TO CONFIRM DATA, UPTO HERE IS COVERED IN APP
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   df <- dat  # refresh the data
@@ -705,6 +706,12 @@
   
     summary(fit.resb)
 
+    #https://github.com/rinpharma/2020_presentations/blob/main/talks_folder/2020-Sabanes_Bove-Implementing_MMRM_in_R.pdf
+    # this is from R in pharma conference
+    lmer(y~x+baseline+(0+x|g), mdata,
+         control=lmerControl(check.nobs.vs.nRE="ignore"))
+    
+    
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     #  FIT AGAIN WITH FRANK HARRELL GLS : mdata
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -102,13 +102,15 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                   div(
                                       actionButton(inputId='ab1', label="Shiny",   icon = icon("th"), 
                                                    onclick ="window.open('https://raw.githubusercontent.com/eamonn2014/plotting-longitudinal-data2/master/app2/app.R', '_blank')"),   
+                                      
                                       actionButton(inputId='ab1', label="Rcode 1",   icon = icon("th"), 
-                                                   
-                                                   
-                                                   onclick ="window.open('https://raw.githubusercontent.com/eamonn2014/plotting-longitudinal-data2/master/gls%20one%20arm%20estimation.R', '_blank')"),   
+                                                   onclick ="window.open('https://raw.githubusercontent.com/eamonn2014/plotting-longitudinal-data2/master/plotting-longitudinal-data.R', '_blank')"),  
+                                      
                                       actionButton(inputId='ab1', label="Rcode 2",   icon = icon("th"), 
-                                                   
-                                                   onclick ="window.open('https://raw.githubusercontent.com/eamonn2014/plotting-longitudinal-data2/master/plotting-longitudinal-data.R', '_blank')"),   
+                                                   onclick ="window.open('https://raw.githubusercontent.com/eamonn2014/plotting-longitudinal-data2/master/gls%20one%20arm%20estimation.R', '_blank')"),  
+                                      
+                                     
+                                      
                                       actionButton("resample", "Simulate"),
                                       br(), br(),
                                       tags$style(".well {background-color:#b6aebd ;}"), 
