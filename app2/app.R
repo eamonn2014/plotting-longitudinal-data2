@@ -303,7 +303,7 @@ ui <- fluidPage(theme = shinytheme("journal"), #https://www.rdocumentation.org/p
                                           
                                           h4(strong("Table 10 GLS Model predictions not adjusting for baseline version of response, exponentiated estimates")),
                                           div(class="span7", verbatimTextOutput("z0")),
-                                          h4(strong("Table 11 GLS Model not adjusting for baseline version of respons")),
+                                          h4(strong("Table 11 GLS Model not adjusting for baseline version of response")),
                                           div(class="span7", verbatimTextOutput("harrell0")),
                                           
                                         
